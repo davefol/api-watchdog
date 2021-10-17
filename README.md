@@ -7,6 +7,13 @@ This means that to install it with TRAPI validation you invoke
 pip install api-watchdog[TRAPI]
 ```
 
+If you are using `zsh` you will run affoul of bracket globbing and should use
+```
+pip install 'api-watchdog[TRAPI]'
+```
+
+See this [stackoverflow question](https://stackoverflow.com/questions/30539798/zsh-no-matches-found-requestssecurity) for context.
+
 Available extensions are:
 - TRAPI
 

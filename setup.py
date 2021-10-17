@@ -16,9 +16,13 @@ setup(
     authot="David Folarin",
     description="API watchdog",
     long_description=readme(),
+    long_description_content_type="text/markdown",
     install_requires=[
         "pydantic>=1.8.2",
     ],
+    extras_require={
+        "TRAPI": ["reasoner-pydantic"]
+    },
     entry_points={"console_scripts": [
     ]}
 )

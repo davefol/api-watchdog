@@ -16,6 +16,9 @@ setup(
     authot="David Folarin",
     description="API watchdog",
     long_description=readme(),
+    install_requires=[
+        "pydantic>=1.8.2",
+    ],
     entry_points={"console_scripts": [
     ]}
 )

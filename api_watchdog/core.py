@@ -51,3 +51,4 @@ class WatchdogResult(BaseModel):
     success: bool
     latency: float
     timestamp: datetime
+    response: Any

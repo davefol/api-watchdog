@@ -2,6 +2,7 @@ import unittest
 
 from api_watchdog.core import WatchdogTest
 from api_watchdog.integrations.trapi import TrapiMessage
+from api_watchdog.core import ValidationType
 
 TRAPI_SKIP_MESSAGE = "TRAPI exentsion not installed"
 try:
@@ -29,7 +30,7 @@ class TestWatchdog(unittest.TestCase):
         self.assertEqual(test.name, "")
         self.assertEqual(test.target, "http://test.com")
         self.assertEqual(test.payload, TrapiMessage())
-        self.assertEqual(test.validate_payload, "TRAPI")
+        self.assertEqual(test.validate_payload, ValidationType.Trapi)
         self.assertEqual(test.expectation, {})
         self.assertEqual(test.validate_expectation, None)
 
@@ -53,7 +54,7 @@ class TestWatchdog(unittest.TestCase):
         self.assertEqual(test.name, "")
         self.assertEqual(test.target, "http://test.com")
         self.assertEqual(test.payload, TrapiMessage())
-        self.assertEqual(test.validate_payload, "TRAPI")
+        self.assertEqual(test.validate_payload, ValidationType.Trapi)
         self.assertEqual(test.expectation, {})
         self.assertEqual(test.validate_expectation, None)
 
@@ -75,7 +76,7 @@ class TestWatchdog(unittest.TestCase):
         self.assertEqual(test.payload, {})
         self.assertEqual(test.validate_payload, None)
         self.assertEqual(test.expectation, TrapiMessage())
-        self.assertEqual(test.validate_expectation, "TRAPI")
+        self.assertEqual(test.validate_expectation, ValidationType.Trapi)
 
     @unittest.skipIf(not TRAPI_ENABLED, TRAPI_SKIP_MESSAGE)
     def test_parse_trapi_validate_expectation_from_json(self):
@@ -99,7 +100,7 @@ class TestWatchdog(unittest.TestCase):
         self.assertEqual(test.payload, {})
         self.assertEqual(test.validate_payload, None)
         self.assertEqual(test.expectation, TrapiMessage())
-        self.assertEqual(test.validate_expectation, "TRAPI")
+        self.assertEqual(test.validate_expectation, ValidationType.Trapi)
 
     def test_validate_expectation_unknown_raises_err(self):
         """

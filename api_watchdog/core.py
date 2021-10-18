@@ -1,17 +1,22 @@
-from typing import Optional, Union, Any, Dict
+from datetime import datetime
+from enum import Enum
+from typing import Optional, Any
 
-from pydantic import BaseModel, StrictStr, AnyUrl, Json
+from pydantic import BaseModel, StrictStr, AnyUrl
 
 from api_watchdog.integrations.trapi import TrapiMessage
 
-VALIDATION_MAP = {"TRAPI": TrapiMessage}
 
+class ValidationType(Enum):
+    Trapi = "TRAPI"
+
+VALIDATION_MAP = {ValidationType.Trapi: TrapiMessage}
 
 class WatchdogTest(BaseModel):
     name: StrictStr
     target: AnyUrl
-    validate_payload: Optional[StrictStr]
-    validate_expectation: Optional[StrictStr]
+    validate_payload: Optional[ValidationType]
+    validate_expectation: Optional[ValidationType]
     payload: Any
     expectation: Any
 
@@ -40,3 +45,9 @@ class WatchdogTest(BaseModel):
                 )
 
         return test
+
+class WatchdogResult(BaseModel):
+    test: WatchdogTest
+    success: bool
+    latency: float
+    timestamp: datetime

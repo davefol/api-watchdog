@@ -22,7 +22,7 @@ If you do not want any validation support you can use the bare `pip install api-
 ## What it is
 An API monitoring utility that aspires to support:
 - [ ] Validation
-- [ ] Continuos Integration
+- [ ] Continuous Integration
 - [ ] Multiple input and output formats
 - [ ] Test discovery / minimal configuration
 

@@ -83,7 +83,10 @@ def group_results_by_target(
     grouper_nodes: Dict[Tuple[str, ...], GrouperNode] = {(): GrouperNode(())}
     for key in sorted(set([key for _, key in result_with_keys])):
         node = GrouperNode(key=key)
-        grouper_nodes[key[:-1]].children.append(node)
+        try:
+            grouper_nodes[key[:-1]].children.append(node)
+        except KeyError:
+            grouper_nodes[()].children.append(node)
         grouper_nodes[key] = node
 
     # depth first search our out-tree to fill out our WatchdogResultGroup

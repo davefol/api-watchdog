@@ -1,5 +1,11 @@
 # API Watchdog
 
+## Usage
+```
+api-watchdog discover path/to/test/files
+```
+Will output the abbreviated result of the tests to stdout.
+
 ## Installation
 API watchdog handles validation support through extra requirements.
 This means that to install it with TRAPI validation you invoke

@@ -8,11 +8,8 @@ from api_watchdog.core import WatchdogTest, WatchdogResult
 
 
 class Timer:
-    def __init__(self):
-        self.start = time.time()
-
     def __enter__(self):
-        return self
+        self.start = time.time()
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.time = time.time() - self.start

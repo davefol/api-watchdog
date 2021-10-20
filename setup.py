@@ -24,5 +24,6 @@ setup(
         "TRAPI": ["reasoner-pydantic"]
     },
     entry_points={"console_scripts": [
+        'api-watchdog = api_watchdog.cli:cli'
     ]}
 )

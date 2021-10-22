@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import Optional, Any
+from typing import Optional, Any, List
 
 from pydantic import BaseModel, StrictStr, AnyUrl
 
@@ -12,38 +12,32 @@ class ValidationType(Enum):
 
 VALIDATION_MAP = {ValidationType.Trapi: TrapiMessage}
 
+class Expectation(BaseModel):
+    selector: StrictStr
+    value: Any
+    validate: Optional[ValidationType]
+
 class WatchdogTest(BaseModel):
     name: StrictStr
     target: AnyUrl
     validate_payload: Optional[ValidationType]
-    validate_expectation: Optional[ValidationType]
     payload: Any
-    expectation: Any
+    expectations: List[Expectation]
 
     @classmethod
     def parse_obj(cls, o):
         test = super(WatchdogTest, cls).parse_obj(o)
         if test.validate_payload is not None:
+            breakpoint()
             try:
                 test.payload = VALIDATION_MAP[test.validate_payload].parse_obj(
-                    test.payload
+                    test.payload["message"]
                 )
             except KeyError:
                 raise ValueError(
                     f"Uknown validation type {test.validate_payload} for"
                     " payload"
                 )
-        if test.validate_expectation is not None:
-            try:
-                test.expectation = VALIDATION_MAP[
-                    test.validate_expectation
-                ].parse_obj(test.expectation)
-            except KeyError:
-                raise ValueError(
-                    f"Unknown validation type {test.validate_expectation} for"
-                    " expectation"
-                )
-
         return test
 
 class WatchdogResult(BaseModel):

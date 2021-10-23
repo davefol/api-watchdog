@@ -1,48 +1,37 @@
 from datetime import datetime
-from enum import Enum
-from typing import Optional, Any, List
+from typing import Any, List, Literal
+
+from api_watchdog.validate import ValidationType
+from api_watchdog.validate import validate as _validate
 
 from pydantic import BaseModel, StrictStr, AnyUrl
-
-from api_watchdog.integrations.trapi import TrapiMessage
-
-
-class ValidationType(Enum):
-    Trapi = "TRAPI"
-
-VALIDATION_MAP = {ValidationType.Trapi: TrapiMessage}
 
 class Expectation(BaseModel):
     selector: StrictStr
     value: Any
-    validate: Optional[ValidationType]
+    validation_type: ValidationType
+
+    def __init__(self, selector, value, validation_type):
+        super().__init__(selector=selector, value=value, validation_type=validation_type)
+        self.value = _validate(self.value, self.validation_type)
+
+class ExpectationResult(BaseModel):
+    expectation: Expectation
+    result: Literal["success", "value", "validate"]
+    actual: Any
 
 class WatchdogTest(BaseModel):
     name: StrictStr
     target: AnyUrl
-    validate_payload: Optional[ValidationType]
     payload: Any
     expectations: List[Expectation]
 
-    @classmethod
-    def parse_obj(cls, o):
-        test = super(WatchdogTest, cls).parse_obj(o)
-        if test.validate_payload is not None:
-            breakpoint()
-            try:
-                test.payload = VALIDATION_MAP[test.validate_payload].parse_obj(
-                    test.payload["message"]
-                )
-            except KeyError:
-                raise ValueError(
-                    f"Uknown validation type {test.validate_payload} for"
-                    " payload"
-                )
-        return test
-
 class WatchdogResult(BaseModel):
-    test: WatchdogTest
+    test_name: StrictStr
     success: bool
     latency: float
     timestamp: datetime
+    payload: Any
     response: Any
+    results: List[ExpectationResult]
+

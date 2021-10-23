@@ -19,6 +19,7 @@ setup(
     long_description_content_type="text/markdown",
     install_requires=[
         "pydantic>=1.8.2",
+        "jq>=1.2.1",
     ],
     extras_require={
         "TRAPI": ["reasoner-pydantic"]

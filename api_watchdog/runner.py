@@ -1,10 +1,18 @@
 import concurrent.futures
 import json
 import time
-from typing import Iterable, Iterator
+from typing import Iterable, Iterator, Any, Optional
 import urllib.request
 
-from api_watchdog.core import WatchdogTest, WatchdogResult
+import jq
+
+from api_watchdog.core import (
+    WatchdogTest,
+    WatchdogResult,
+    Expectation,
+    ExpectationResult,
+)
+from api_watchdog.validate import validate, ValidationError
 
 
 class Timer:
@@ -25,7 +33,7 @@ class WatchdogRunner:
 
         try:
             body = test.payload.json().encode("utf-8")
-        except AttributeError: # we got a plain python dict and not a pydantic model
+        except AttributeError:  # we got a plain python dict and not a pydantic model
             body = json.dumps(test.payload).encode("utf-8")
 
         request.add_header("Content-Length", str(len(body)))
@@ -36,17 +44,28 @@ class WatchdogRunner:
         latency = timer.time
 
         response_data = response.read()
-        response_data = response_data.decode(response.info().get_content_charset('utf-8'))
+        response_data = response_data.decode(
+            response.info().get_content_charset("utf-8")
+        )
 
-        try:
-            response_data = type(test.expectation).parse_raw(response_data)
-        except AttributeError: # expectation is a plain python dict and not a pydantic model
-            response_data = json.loads(response_data)
+        response_parsed = json.loads(response_data)
 
-        success = response_data == test.expectation
+        expectation_results = []
+        for expectation in test.expectations:
+            for e in jq.compile(expectation.selector).input(response_parsed):
+                expectation_error = self.resolve_expectation(expectation, e)
+                expectation_results.append(expectation_error)
+
+        success = all([x.result == "success" for x in expectation_results])
 
         return WatchdogResult(
-            test=test, success=success, latency=latency, timestamp=time.time(), response=response_data
+            test_name=test.name,
+            success=success,
+            latency=latency,
+            timestamp=time.time(),
+            payload=test.payload,
+            response=response_data,
+            results=expectation_results,
         )
 
     def run_tests(
@@ -56,3 +75,17 @@ class WatchdogRunner:
             max_workers=self.max_workers
         ) as executor:
             return executor.map(self.run_test, tests)
+
+    @staticmethod
+    def resolve_expectation(
+        expectation: Expectation, value: Any
+    ) -> ExpectationResult:
+        try:
+            validated_elem = validate(value, expectation.validation_type)
+        except ValidationError:
+            return ExpectationResult(expectation=expectation, result="validate", actual=value)
+
+        if validated_elem == expectation.value:
+            return ExpectationResult(expectation=expectation, result="success", actual=validated_elem)
+        else:
+            return ExpectationResult(expectation=expectation, result="value", actual=validated_elem)

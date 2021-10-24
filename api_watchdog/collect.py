@@ -45,7 +45,7 @@ def group_results_by_target(
         Extract the top level of the url as well as the path
         these will be the keys for grouping
         """
-        url_parts = urlparse(result.test.target)
+        url_parts = urlparse(result.target)
         root = url_parts.scheme + "://" + url_parts.netloc
         rest = url_parts.path.split("/")
         rest = [x for x in rest if x not in ("", "/")]

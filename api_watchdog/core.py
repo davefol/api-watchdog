@@ -28,6 +28,7 @@ class WatchdogTest(BaseModel):
 
 class WatchdogResult(BaseModel):
     test_name: StrictStr
+    target: AnyUrl
     success: bool
     latency: float
     timestamp: datetime

@@ -60,11 +60,12 @@ class WatchdogRunner:
 
         return WatchdogResult(
             test_name=test.name,
+            target=test.target,
             success=success,
             latency=latency,
             timestamp=time.time(),
             payload=test.payload,
-            response=response_data,
+            response=response_parsed,
             results=expectation_results,
         )
 

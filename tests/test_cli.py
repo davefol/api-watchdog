@@ -4,7 +4,7 @@ from pathlib import Path
 import json
 import shutil
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, mock_open
 
 from api_watchdog.cli import discover
 
@@ -23,7 +23,13 @@ class TestCli(unittest.TestCase):
                 "name": "1",
                 "target": "http://a.com/",
                 "payload": {"val": 1},
-                "expectation": {"val": 2}
+                "expectations": [
+                    {
+                        "selector": ".val",
+                        "value": 2,
+                        "validation_type": "int"
+                    }
+                ]
             }
             """
         )
@@ -33,7 +39,13 @@ class TestCli(unittest.TestCase):
                 "name": "2",
                 "target": "http://a.com/b",
                 "payload": {"val": 2},
-                "expectation": {"val": 3}
+                "expectations": [
+                    {
+                        "selector": ".val",
+                        "value": 3,
+                        "validation_type": "int"
+                    }
+                ]
             }
             """
         )
@@ -43,7 +55,13 @@ class TestCli(unittest.TestCase):
                 "name": "3",
                 "target": "http://a.com/c",
                 "payload": {"val": 3},
-                "expectation": {"val": 4}
+                "expectations": [
+                    {
+                        "selector": ".val",
+                        "value": 4,
+                        "validation_type": "int"
+                    }
+                ]
             }
             """
         )
@@ -73,7 +91,7 @@ class TestCli(unittest.TestCase):
 
         mock_urlopen.side_effect = get_response_mock
         mocked_args = MagicMock()
-        mocked_args.search_directory = self.base_path
+        vars(mocked_args)["search-directory"] = self.base_path
         mocked_args.pattern = "*.watchdog.json"
         mocked_args.output_path = None
 
@@ -84,6 +102,139 @@ class TestCli(unittest.TestCase):
             f"{3:<20} Pass {0.0:<12.3f}\n"
         )
         self.assertEqual(expectation, mock_stdout.getvalue())
+
+    @patch("time.time", MagicMock(return_value=0.0))
+    @patch("builtins.open", new_callable=mock_open)
+    @patch("urllib.request.urlopen")
+    def test_discover_write_to_file(self, mock_urlopen, mock_stdout):
+        """
+        Test that discover finds finds and writes
+        them to file
+        """
+        def get_response_mock(req, body):
+            mock = MagicMock()
+            mock.getcode.return_value = 200
+
+            def mocked_read():
+                data = json.loads(body.decode("utf-8"))
+                return json.dumps(
+                    {"val": data["val"] + 1}
+                ).encode("utf-8")
+
+            mock.read.side_effect = mocked_read
+            mock.info.return_value.get_content_charset.return_value = "utf-8"
+            return mock
+
+
+        mock_urlopen.side_effect = get_response_mock
+        mocked_args = MagicMock()
+        vars(mocked_args)["search-directory"] = self.base_path
+        mocked_args.pattern = "*.watchdog.json"
+        mocked_args.output_path = "some/random/path.json"
+
+
+        discover(mocked_args)
+
+        expected = """
+        {
+          "name": "<root>",
+          "results": [],
+          "groups": [
+            {
+              "name": "http://a.com",
+              "results": [
+                {
+                  "test_name": "1",
+                  "target": "http://a.com/",
+                  "success": true,
+                  "latency": 0,
+                  "timestamp": "1970-01-01T00:00:00+00:00",
+                  "payload": {
+                    "val": 1
+                  },
+                  "response": {
+                    "val": 2
+                  },
+                  "results": [
+                    {
+                      "expectation": {
+                        "selector": ".val",
+                        "value": 2,
+                        "validation_type": "int"
+                      },
+                      "result": "success",
+                      "actual": 2
+                    }
+                  ]
+                }
+              ],
+              "groups": [
+                {
+                  "name": "http://a.com/b",
+                  "results": [
+                    {
+                      "test_name": "2",
+                      "target": "http://a.com/b",
+                      "success": true,
+                      "latency": 0,
+                      "timestamp": "1970-01-01T00:00:00+00:00",
+                      "payload": {
+                        "val": 2
+                      },
+                      "response": {
+                        "val": 3
+                      },
+                      "results": [
+                        {
+                          "expectation": {
+                            "selector": ".val",
+                            "value": 3,
+                            "validation_type": "int"
+                          },
+                          "result": "success",
+                          "actual": 3
+                        }
+                      ]
+                    }
+                  ],
+                  "groups": []
+                },
+                {
+                  "name": "http://a.com/c",
+                  "results": [
+                    {
+                      "test_name": "3",
+                      "target": "http://a.com/c",
+                      "success": true,
+                      "latency": 0,
+                      "timestamp": "1970-01-01T00:00:00+00:00",
+                      "payload": {
+                        "val": 3
+                      },
+                      "response": {
+                        "val": 4
+                      },
+                      "results": [
+                        {
+                          "expectation": {
+                            "selector": ".val",
+                            "value": 4,
+                            "validation_type": "int"
+                          },
+                          "result": "success",
+                          "actual": 4
+                        }
+                      ]
+                    }
+                  ],
+                  "groups": []
+                }
+              ]
+            }
+          ]
+        }
+        """
+        self.assertEqual(json.loads(mock_stdout().write.mock_calls[0][1][0]), json.loads(expected))
 
 if __name__ == "__main__":
     unittest.main()

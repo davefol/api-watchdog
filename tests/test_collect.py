@@ -1,7 +1,7 @@
 import unittest
 
 from api_watchdog.collect import collect_results, WatchdogResultGroup
-from api_watchdog.core import WatchdogResult, WatchdogTest
+from api_watchdog.core import WatchdogResult
 
 
 class TestCollect(unittest.TestCase):
@@ -15,9 +15,10 @@ class TestCollect(unittest.TestCase):
         ]
         results = [
             WatchdogResult(
-                test=WatchdogTest(
-                    name=name, target=target, payload=None, expectation=None
-                ),
+                test_name=name,
+                target=target,
+                payload=None,
+                results=[],
                 success=True,
                 latency=0.0,
                 timestamp=0.0,
@@ -35,12 +36,10 @@ class TestCollect(unittest.TestCase):
                     name="http://a.com",
                     results=[
                         WatchdogResult(
-                            test=WatchdogTest(
-                                name="1",
-                                target="http://a.com/",
-                                payload=None,
-                                expectation=None,
-                            ),
+                            test_name="1",
+                            target="http://a.com/",
+                            payload=None,
+                            results=[],
                             success=True,
                             latency=0.0,
                             timestamp=0.0,
@@ -52,24 +51,20 @@ class TestCollect(unittest.TestCase):
                             name="http://a.com/b",
                             results=[
                                 WatchdogResult(
-                                    test=WatchdogTest(
-                                        name="2",
-                                        target="http://a.com/b",
-                                        payload=None,
-                                        expectation=None,
-                                    ),
+                                    test_name="2",
+                                    target="http://a.com/b",
+                                    payload=None,
+                                    results=[],
                                     success=True,
                                     latency=0.0,
                                     timestamp=0.0,
                                     response=None,
                                 ),
                                 WatchdogResult(
-                                    test=WatchdogTest(
-                                        name="3",
-                                        target="http://a.com/b",
-                                        payload=None,
-                                        expectation=None,
-                                    ),
+                                    test_name="3",
+                                    target="http://a.com/b",
+                                    payload=None,
+                                    results=[],
                                     success=True,
                                     latency=0.0,
                                     timestamp=0.0,
@@ -82,12 +77,10 @@ class TestCollect(unittest.TestCase):
                             name="http://a.com/c",
                             results=[
                                 WatchdogResult(
-                                    test=WatchdogTest(
-                                        name="4",
-                                        target="http://a.com/c",
-                                        payload=None,
-                                        expectation=None,
-                                    ),
+                                    test_name="4",
+                                    target="http://a.com/c",
+                                    payload=None,
+                                    results=[],
                                     success=True,
                                     latency=0.0,
                                     timestamp=0.0,
@@ -100,12 +93,10 @@ class TestCollect(unittest.TestCase):
                             name="http://a.com/d",
                             results=[
                                 WatchdogResult(
-                                    test=WatchdogTest(
-                                        name="5",
-                                        target="http://a.com/d",
-                                        payload=None,
-                                        expectation=None,
-                                    ),
+                                    test_name="5",
+                                    target="http://a.com/d",
+                                    payload=None,
+                                    results=[],
                                     success=True,
                                     latency=0.0,
                                     timestamp=0.0,
@@ -129,9 +120,10 @@ class TestCollect(unittest.TestCase):
         ]
         results = [
             WatchdogResult(
-                test=WatchdogTest(
-                    name=name, target=target, payload=None, expectation=None
-                ),
+                test_name=name,
+                target=target,
+                payload=None,
+                results=[],
                 success=True,
                 latency=0.0,
                 timestamp=0.0,
@@ -149,24 +141,20 @@ class TestCollect(unittest.TestCase):
                     name="http://a.com/b",
                     results=[
                         WatchdogResult(
-                            test=WatchdogTest(
-                                name="2",
-                                target="http://a.com/b",
-                                payload=None,
-                                expectation=None,
-                            ),
+                            test_name="2",
+                            target="http://a.com/b",
+                            payload=None,
+                            results=[],
                             success=True,
                             latency=0.0,
                             timestamp=0.0,
                             response=None,
                         ),
                         WatchdogResult(
-                            test=WatchdogTest(
-                                name="3",
-                                target="http://a.com/b",
-                                payload=None,
-                                expectation=None,
-                            ),
+                            test_name="3",
+                            target="http://a.com/b",
+                            payload=None,
+                            results=[],
                             success=True,
                             latency=0.0,
                             timestamp=0.0,
@@ -179,12 +167,10 @@ class TestCollect(unittest.TestCase):
                     name="http://a.com/c",
                     results=[
                         WatchdogResult(
-                            test=WatchdogTest(
-                                name="4",
-                                target="http://a.com/c",
-                                payload=None,
-                                expectation=None,
-                            ),
+                            test_name="4",
+                            target="http://a.com/c",
+                            payload=None,
+                            results=[],
                             success=True,
                             latency=0.0,
                             timestamp=0.0,
@@ -197,12 +183,10 @@ class TestCollect(unittest.TestCase):
                     name="http://a.com/d",
                     results=[
                         WatchdogResult(
-                            test=WatchdogTest(
-                                name="5",
-                                target="http://a.com/d",
-                                payload=None,
-                                expectation=None,
-                            ),
+                            test_name="5",
+                            target="http://a.com/d",
+                            payload=None,
+                            results=[],
                             success=True,
                             latency=0.0,
                             timestamp=0.0,

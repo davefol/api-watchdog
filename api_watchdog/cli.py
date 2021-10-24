@@ -26,7 +26,7 @@ def discover(args):
     results = runner.run_tests(tests)
     grouped_results = collect_results(results)
     if args.output_path:
-        with open(args.output_path) as fp:
+        with open(args.output_path, "w") as fp:
             fp.write(grouped_results.json())
     else:
         topological_print(grouped_results)

@@ -234,6 +234,7 @@ class TestCli(unittest.TestCase):
           ]
         }
         """
+        mock_stdout.assert_called_once_with("some/random/path.json", "w")
         self.assertEqual(json.loads(mock_stdout().write.mock_calls[0][1][0]), json.loads(expected))
 
 if __name__ == "__main__":

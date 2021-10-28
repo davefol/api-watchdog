@@ -6,6 +6,24 @@ api-watchdog discover path/to/test/files
 ```
 Will output the abbreviated result of the tests to stdout.
 
+```
+api-watchdog discover --email path/to/test/files
+```
+Will email the results of the tests to the relevant addresses
+(as determined by the `email_to=` field of the test. Test results
+are grouped so that only one email per address is sent per run.
+
+Whjen using the CLI, these environment variables must be set to email results
+- MAILGUN_API_URL
+- MAILGUN_API_TOKEN
+- MAILGUN_FROM
+
+```
+api-watchdog discover -o results_file.json path/to/test/files
+```
+Will serialize the `WatchdogResultGroup` object to the path specified
+by the `-o` flag. 
+
 ## Installation
 API watchdog handles validation support through extra requirements.
 This means that to install it with TRAPI validation you invoke

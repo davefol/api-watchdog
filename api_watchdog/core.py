@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, List, Literal, Union
+from typing import Any, List, Literal, Union, Optional
 
 from api_watchdog.result_error import ResultError
 from api_watchdog.validate import ValidationType
@@ -25,6 +25,7 @@ class ExpectationResult(BaseModel):
 class WatchdogTest(BaseModel):
     name: StrictStr
     target: AnyUrl
+    email_to: Optional[StrictStr]
     payload: Any
     expectations: List[Expectation]
 
@@ -37,4 +38,5 @@ class WatchdogResult(BaseModel):
     payload: Any
     response: Any
     results: List[ExpectationResult]
+    email_to: Optional[StrictStr]
 

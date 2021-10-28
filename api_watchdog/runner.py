@@ -1,7 +1,7 @@
 import concurrent.futures
 import json
 import time
-from typing import Iterable, Iterator, Any, Optional
+from typing import Iterable, Iterator, Any, Optional, List
 import urllib.request
 
 import jq
@@ -60,6 +60,7 @@ class WatchdogRunner:
                 success=False,
                 latency=latency,
                 timestamp=time.time(),
+                email_to=test.email_to,
                 payload=test.payload,
                 response=None,
                 results=expectation_results
@@ -84,16 +85,20 @@ class WatchdogRunner:
 
         success = all([x.result == "success" for x in expectation_results])
 
-        return WatchdogResult(
+
+        result = WatchdogResult(
             test_name=test.name,
             target=test.target,
             success=success,
             latency=latency,
             timestamp=time.time(),
+            email_to=test.email_to,
             payload=test.payload,
             response=response_parsed,
             results=expectation_results,
         )
+
+        return result
 
     def run_tests(
         self, tests: Iterable[WatchdogTest]
@@ -122,3 +127,4 @@ class WatchdogRunner:
             return ExpectationResult(
                 expectation=expectation, result="value", actual=validated_elem
             )
+

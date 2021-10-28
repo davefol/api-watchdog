@@ -5,6 +5,7 @@ import sys
 from api_watchdog.collect import collect_results
 from api_watchdog.core import WatchdogTest
 from api_watchdog.runner import WatchdogRunner
+from api_watchdog.hooks.result_group.mailgun import ResultGroupHookMailgun
 
 
 def topological_print(result_group, file=None):
@@ -25,6 +26,9 @@ def discover(args):
     ]
     results = runner.run_tests(tests)
     grouped_results = collect_results(results)
+    if args.email:
+        email_hook = ResultGroupHookMailgun()
+        email_hook(grouped_results)
     if args.output_path:
         with open(args.output_path, "w") as fp:
             fp.write(grouped_results.json())
@@ -57,6 +61,10 @@ def cli():
         default=None,
         help="Path to output test results file. When not provided, results are"
         " sent to stdout",
+    )
+    parser_discover.add_argument(
+        "--email",
+        action="store_true"
     )
     parser_discover.set_defaults(func=discover)
 

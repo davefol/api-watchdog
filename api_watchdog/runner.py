@@ -76,7 +76,6 @@ class WatchdogRunner:
         for expectation in test.expectations:
             try:
                 for e in jq.compile(expectation.selector).input(response_parsed):
-                    # print(e)
                     expectation_error = self.resolve_expectation(expectation, e)
                     expectation_results.append(expectation_error)
             except ValueError:
@@ -84,7 +83,6 @@ class WatchdogRunner:
                 expectation_results.append(ExpectationResult(expectation=expectation, result="jq-error", actual=None))
 
         success = all([x.result == "success" for x in expectation_results])
-        print(success)
 
         return WatchdogResult(
             test_name=test.name,

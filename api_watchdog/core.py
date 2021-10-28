@@ -19,7 +19,7 @@ class Expectation(BaseModel):
 
 class ExpectationResult(BaseModel):
     expectation: Expectation
-    result: Union[Literal["success", "value", "validate"], ResultError]
+    result: Union[Literal["success", "value", "validate", "jq-error"], ResultError]
     actual: Any
 
 class WatchdogTest(BaseModel):

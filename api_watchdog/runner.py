@@ -12,6 +12,7 @@ from api_watchdog.core import (
     Expectation,
     ExpectationResult,
 )
+from api_watchdog.result_error import ResultError
 from api_watchdog.validate import validate, ValidationError
 
 
@@ -43,6 +44,27 @@ class WatchdogRunner:
             response = urllib.request.urlopen(request, body)
         latency = timer.time
 
+        status_code = response.getcode()
+        if 400 >= status_code >= 599:
+            expectation_results = [
+                ExpectationResult(
+                    expectation=expectation,
+                    result=ResultError(status_code),
+                    actual=None,
+                )
+                for expectation in test.expectations
+            ]
+            return WatchdogResult(
+                test_name=test.name,
+                target=test.target,
+                success=False,
+                latency=latency,
+                timestamp=time.time(),
+                payload=test.payload,
+                response=None,
+                results=expectation_results
+            )
+
         response_data = response.read()
         response_data = response_data.decode(
             response.info().get_content_charset("utf-8")
@@ -52,11 +74,17 @@ class WatchdogRunner:
 
         expectation_results = []
         for expectation in test.expectations:
-            for e in jq.compile(expectation.selector).input(response_parsed):
-                expectation_error = self.resolve_expectation(expectation, e)
-                expectation_results.append(expectation_error)
+            try:
+                for e in jq.compile(expectation.selector).input(response_parsed):
+                    # print(e)
+                    expectation_error = self.resolve_expectation(expectation, e)
+                    expectation_results.append(expectation_error)
+            except ValueError:
+                # jq internal error
+                expectation_results.append(ExpectationResult(expectation=expectation, result="jq-error", actual=None))
 
         success = all([x.result == "success" for x in expectation_results])
+        print(success)
 
         return WatchdogResult(
             test_name=test.name,
@@ -84,9 +112,15 @@ class WatchdogRunner:
         try:
             validated_elem = validate(value, expectation.validation_type)
         except ValidationError:
-            return ExpectationResult(expectation=expectation, result="validate", actual=value)
+            return ExpectationResult(
+                expectation=expectation, result="validate", actual=value
+            )
 
         if validated_elem == expectation.value:
-            return ExpectationResult(expectation=expectation, result="success", actual=validated_elem)
+            return ExpectationResult(
+                expectation=expectation, result="success", actual=validated_elem
+            )
         else:
-            return ExpectationResult(expectation=expectation, result="value", actual=validated_elem)
+            return ExpectationResult(
+                expectation=expectation, result="value", actual=validated_elem
+            )

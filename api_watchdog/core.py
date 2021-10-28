@@ -1,6 +1,7 @@
 from datetime import datetime
-from typing import Any, List, Literal
+from typing import Any, List, Literal, Union
 
+from api_watchdog.result_error import ResultError
 from api_watchdog.validate import ValidationType
 from api_watchdog.validate import validate as _validate
 
@@ -15,9 +16,10 @@ class Expectation(BaseModel):
         super().__init__(selector=selector, value=value, validation_type=validation_type)
         self.value = _validate(self.value, self.validation_type)
 
+
 class ExpectationResult(BaseModel):
     expectation: Expectation
-    result: Literal["success", "value", "validate"]
+    result: Union[Literal["success", "value", "validate"], ResultError]
     actual: Any
 
 class WatchdogTest(BaseModel):

@@ -20,6 +20,7 @@ setup(
     install_requires=[
         "pydantic>=1.8.2",
         "jq>=1.2.1",
+        "requests>=2.26.0"
     ],
     extras_require={
         "TRAPI": ["reasoner-pydantic"]

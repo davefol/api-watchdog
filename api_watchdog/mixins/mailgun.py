@@ -1,8 +1,8 @@
-import base64
+import io
 import os
-from typing import Optional
-import urllib.parse
-import urllib.request
+from typing import Optional, Dict, Tuple, Literal, List
+
+import requests
 
 class MailgunMixin:
     """
@@ -19,34 +19,27 @@ class MailgunMixin:
         self.from_address = from_address or os.environ["MAILGUN_FROM"]
 
     def send_text_email(self, to: str, subject: str, text: str):
-        data = urllib.parse.urlencode(
-            {
+        data = {
                 "from": self.from_address,
                 "to": to,
                 "subject": subject,
                 "text": text,
             }
-        ).encode("ascii")
-        self._send_data(data)
+        return self._send_data(data)
 
-    def send_html_email(self, to: str, subject: str, html: str):
-        data = urllib.parse.urlencode(
-            {
+    def send_html_email(self, to: str, subject: str, html: str, attachments: Optional[List[Tuple[Literal["attachment"], io.BytesIO]]]= None):
+        data = {
                 "from": self.from_address,
                 "to": to,
                 "subject": subject,
                 "html": html,
             }
-        ).encode("ascii")
-        self._send_data(data)
+        return self._send_data(data, attachments=attachments)
 
-    def _send_data(self, data):
-        request = urllib.request.Request(self.url, data=data)
-        request.add_header("Content-Type", "application/x-www-form-urlencoded")
-        encoded_token = base64.b64encode(
-            ("api:" + self.token).encode("ascii")
-        ).decode("ascii")
-        request.add_header("Authorization", "Basic {}".format(encoded_token))
-        response = urllib.request.urlopen(request)
-        return response
-
+    def _send_data(self, data, attachments: Optional[List[Tuple[Literal["attachment"], io.BytesIO]]] = None):
+        return requests.post(
+            self.url,
+            auth=("api", self.token),
+            files=attachments,
+            data=data,
+        )

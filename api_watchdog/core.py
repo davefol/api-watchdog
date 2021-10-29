@@ -25,7 +25,7 @@ class ExpectationResult(BaseModel):
 class WatchdogTest(BaseModel):
     name: StrictStr
     target: AnyUrl
-    email_to: Optional[StrictStr]
+    email_to: Optional[List[StrictStr]]
     payload: Any
     expectations: List[Expectation]
 
@@ -38,5 +38,5 @@ class WatchdogResult(BaseModel):
     payload: Any
     response: Any
     results: List[ExpectationResult]
-    email_to: Optional[StrictStr]
+    email_to: Optional[List[StrictStr]]
 

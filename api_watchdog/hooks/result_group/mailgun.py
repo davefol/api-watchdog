@@ -21,7 +21,7 @@ def email_receivers(result_group) -> List[str]:
         receivers = set()
         for result in result_group.results:
             if result.email_to:
-                receivers.add(result.email_to)
+                receivers.update(result.email_to)
         for group in result_group.groups:
             receivers.update(recursive_receivers(group))
         return receivers
@@ -43,5 +43,5 @@ class ResultGroupHookMailgun(MailgunMixin, ResultGroupHook):
         subject = "Watchdog Result Summary"
         for receiver in receivers:
             to = receiver
-            filtered_result_group = filter_result_group(result_group, lambda r: r.email_to == receiver)
+            filtered_result_group = filter_result_group(result_group, lambda r: receiver in (r.email_to or []))
             self.send_html_email(to=to, subject=subject, html=html_from_result_group(filtered_result_group))

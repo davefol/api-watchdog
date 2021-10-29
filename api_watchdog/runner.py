@@ -3,6 +3,7 @@ import json
 import time
 from typing import Iterable, Iterator, Any, Optional, List
 import urllib.request
+import urllib.error
 
 import jq
 
@@ -31,6 +32,7 @@ class WatchdogRunner:
     def run_test(self, test: WatchdogTest) -> WatchdogResult:
         request = urllib.request.Request(test.target)
         request.add_header("Content-Type", "application/json; charset=utf-8")
+        request.add_header("accept", "application/json")
 
         try:
             body = test.payload.json().encode("utf-8")
@@ -41,11 +43,16 @@ class WatchdogRunner:
 
         timer = Timer()
         with timer:
-            response = urllib.request.urlopen(request, body)
+            try:
+                response = urllib.request.urlopen(request, body)
+                status_code = response.getcode()
+            except urllib.error.HTTPError as e:
+                response = None
+                status_code = e.code
+
         latency = timer.time
 
-        status_code = response.getcode()
-        if 400 >= status_code >= 599:
+        if 400 <= status_code <= 599:
             expectation_results = [
                 ExpectationResult(
                     expectation=expectation,
@@ -66,6 +73,7 @@ class WatchdogRunner:
                 results=expectation_results
             )
 
+        assert response is not None
         response_data = response.read()
         response_data = response_data.decode(
             response.info().get_content_charset("utf-8")

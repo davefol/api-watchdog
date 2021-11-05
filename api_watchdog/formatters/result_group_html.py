@@ -28,12 +28,14 @@ def html_from_result_group(result_group: WatchdogResultGroup) -> str:
         return html
 
     def expectation_result_format(expectation_result: ExpectationResult) -> str:
-        class_name = "passed" if expectation_result.result == "success" else "failed"
+        success_class_name = "passed" if expectation_result.result == "success" else "failed"
+        level_class_name = expectation_result.expectation.level.value
+        class_name = success_class_name + "-" + level_class_name # outlook and some other renderers do not support AND style selectors
         html = (
             f'<div class="result {class_name}">\n'
             f'  <p>{expectation_result.expectation.selector}</p>\n'
             f'  <p>({expectation_result.expectation.validation_type.value}){expectation_result.expectation.value}</p>\n'
-            f'  <p>{expectation_result.actual}</p>\n'
+            f'  <p>{expectation_result.actual} ({level_class_name.upper()})</p>\n'
             f'</div>'
         )
         return html
@@ -68,12 +70,20 @@ def html_from_result_group(result_group: WatchdogResultGroup) -> str:
       border: 1px solid #ddd;
       font-family:'Lucida Console', monospace;
     }
-    .passed {
+    .passed-critical, .passed-warning {
       background-color: #dbfad9;
     }
 
-    .failed {
+    .failed-critical {
       background-color: #fadad9;
+    }
+
+    .failed-warning {
+      background-color: #fff9db;
+    }
+
+    .passed-info, .failed-info {
+      background-color: #d9d9d9;
     }
     </style>
   </head>

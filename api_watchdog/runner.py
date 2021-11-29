@@ -35,17 +35,23 @@ class WatchdogRunner:
         request.add_header("Content-Type", "application/json; charset=utf-8")
         request.add_header("accept", "application/json")
 
-        try:
-            body = test.payload.json().encode("utf-8")
-        except AttributeError:  # we got a plain python dict and not a pydantic model
-            body = json.dumps(test.payload).encode("utf-8")
+        use_body = False
+        if test.payload:
+            use_body = True
+            try:
+                body = test.payload.json().encode("utf-8")
+            except AttributeError:  # we got a plain python dict and not a pydantic model
+                body = json.dumps(test.payload).encode("utf-8")
 
-        request.add_header("Content-Length", str(len(body)))
-
+            request.add_header("Content-Length", str(len(body)))
+        
         timer = Timer()
         with timer:
             try:
-                response = urllib.request.urlopen(request, body)
+                if use_body:
+                    response = urllib.request.urlopen(request, body)
+                else:
+                    response = urllib.request.urlopen(request)
                 status_code = response.getcode()
             except urllib.error.HTTPError as e:
                 response = None

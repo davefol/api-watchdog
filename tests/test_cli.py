@@ -94,6 +94,7 @@ class TestCli(unittest.TestCase):
         vars(mocked_args)["search-directory"] = self.base_path
         mocked_args.pattern = "*.watchdog.json"
         mocked_args.output_path = None
+        mocked_args.email = False
 
         discover(mocked_args)
         expectation = (
@@ -131,7 +132,7 @@ class TestCli(unittest.TestCase):
         vars(mocked_args)["search-directory"] = self.base_path
         mocked_args.pattern = "*.watchdog.json"
         mocked_args.output_path = "some/random/path.json"
-
+        mocked_args.email = False
 
         discover(mocked_args)
 

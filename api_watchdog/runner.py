@@ -31,7 +31,15 @@ class WatchdogRunner:
         self.max_workers = max_workers
 
     def run_test(self, test: WatchdogTest) -> WatchdogResult:
-        request = urllib.request.Request(test.target)
+        options_request = urllib.request.Request(test.target,method="OPTIONS")
+        options_request.add_header("Content-Type", "application/json; charset=utf-8")
+        options_request.add_header("accept", "application/json")
+        options_response = urllib.request.urlopen(options_request, None)
+        method = "POST"
+        if "Allow" in options_response.headers.keys() and "POST" not in options_response.header["Allow"]:
+            method = "GET"
+        
+        request = urllib.request.Request(test.target, method = method)
         request.add_header("Content-Type", "application/json; charset=utf-8")
         request.add_header("accept", "application/json")
 

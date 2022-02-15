@@ -38,6 +38,8 @@ class WatchdogRunner:
         request.add_header("accept", "application/json")
 
         use_body = False
+        body = None
+
         if test.payload:
             use_body = True
             try:
@@ -46,8 +48,20 @@ class WatchdogRunner:
                 body = json.dumps(test.payload).encode("utf-8")
 
             request.add_header("Content-Length", str(len(body)))
-        
+
+        # use the proxy if found
+        if test.proxy is not None:
+            # create a proxy handler using the proxy address found in the test
+            proxy_handler = urllib.request.ProxyHandler({"http": test.proxy})
+
+            # create a opener for this request
+            opener = urllib.request.build_opener(proxy_handler)
+
+            # install the opener that uses the proxy
+            urllib.request.install_opener(opener)
+
         timer = Timer()
+
         with timer:
             try:
                 if use_body:

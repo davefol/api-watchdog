@@ -4,7 +4,6 @@ import time
 from typing import Iterable, Iterator, Any
 import urllib.request
 import urllib.error
-import urllib
 
 import jq
 

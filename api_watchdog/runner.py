@@ -31,7 +31,9 @@ class WatchdogRunner:
         self.max_workers = max_workers
 
     def run_test(self, test: WatchdogTest) -> WatchdogResult:
-        request = urllib.request.Request(test.target)
+        method = test.method
+        
+        request = urllib.request.Request(test.target, method=method)
         request.add_header("Content-Type", "application/json; charset=utf-8")
         request.add_header("accept", "application/json")
 

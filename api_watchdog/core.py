@@ -33,6 +33,7 @@ class WatchdogTest(BaseModel):
     name: StrictStr
     target: AnyUrl
     proxy: Optional[Any] = None
+    method: Optional[StrictStr] = "POST"
     email_to: Optional[List[StrictStr]]
     payload: Any
     expectations: List[Expectation]

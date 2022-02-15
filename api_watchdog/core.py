@@ -32,7 +32,7 @@ class ExpectationResult(BaseModel):
 class WatchdogTest(BaseModel):
     name: StrictStr
     target: AnyUrl
-    proxy: Optional[AnyUrl] = None
+    proxy: Any = None
     email_to: Optional[List[StrictStr]]
     payload: Any
     expectations: List[Expectation]

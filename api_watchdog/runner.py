@@ -4,7 +4,6 @@ import time
 from typing import Iterable, Iterator, Any, Optional, List
 import urllib.request
 import urllib.error
-
 import jq
 
 from api_watchdog.core import (
@@ -40,6 +39,9 @@ class WatchdogRunner:
             body = json.dumps(test.payload).encode("utf-8")
 
         request.add_header("Content-Length", str(len(body)))
+
+        if test.proxy is not None:
+            request.set_proxy(test.proxy, 'https')
 
         timer = Timer()
         with timer:

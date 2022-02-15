@@ -22,14 +22,25 @@ class TestWatchdogRunner(unittest.TestCase):
         Test run_tests returns correct success parameter for each test
         """
 
-        def get_response_mock(req, body):
+        def get_response_mock(req, body=None):
             mock = MagicMock()
             mock.getcode.return_value = 200
 
             def mocked_read():
-                data = json.loads(body.decode("utf-8"))
+                if body:
+                    body_str = body.decode("utf-8")
+                    if body_str:
+                        data = json.loads(body_str)
+                
+                    return json.dumps(
+                        {
+                            "magic_number": 0xFEEDFACE ^ int(data["magic_number"]),
+                        }
+                    ).encode("utf-8")
                 return json.dumps(
-                    {"magic_number": 0xFEEDFACE ^ int(data["magic_number"])}
+                    {
+                        "empty_body": True,
+                    }
                 ).encode("utf-8")
 
             mock.read.side_effect = mocked_read
@@ -63,13 +74,25 @@ class TestWatchdogRunner(unittest.TestCase):
                     Expectation(selector=".magic_number", value=0, validation_type=ValidationType.Int) # incorrect value
                 ]
             ),
+            WatchdogTest(
+                name="Empty Face",
+                target="http://test.com",
+                payload={},
+                expectations=[
+                    Expectation(selector=".empty_body", value=True, validation_type=ValidationType.Int)
+                ]
+            ),
         ]
 
         runner = WatchdogRunner()
         results = sorted(runner.run_tests(tests), key=lambda x: x.test_name)
+        
+        print(results)
+
         self.assertFalse(results[0].success)
         self.assertTrue(results[1].success)
         self.assertTrue(results[2].success)
+        self.assertTrue(results[3].success)
 
     @unittest.skipIf(not TRAPI_ENABLED, TRAPI_SKIP_MESSAGE)
     @patch("urllib.request.urlopen")

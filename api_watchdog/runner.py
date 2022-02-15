@@ -1,9 +1,10 @@
 import concurrent.futures
 import json
 import time
-from typing import Iterable, Iterator, Any, Optional, List
+from typing import Iterable, Iterator, Any, Optional
 import urllib.request
 import urllib.error
+
 import jq
 
 from api_watchdog.core import (
@@ -11,6 +12,7 @@ from api_watchdog.core import (
     WatchdogResult,
     Expectation,
     ExpectationResult,
+    ExpectationLevel,
 )
 from api_watchdog.result_error import ResultError
 from api_watchdog.validate import validate, ValidationError
@@ -33,20 +35,28 @@ class WatchdogRunner:
         request.add_header("Content-Type", "application/json; charset=utf-8")
         request.add_header("accept", "application/json")
 
-        try:
-            body = test.payload.json().encode("utf-8")
-        except AttributeError:  # we got a plain python dict and not a pydantic model
-            body = json.dumps(test.payload).encode("utf-8")
+        use_body = False
+        if test.payload:
+            use_body = True
+            try:
+                body = test.payload.json().encode("utf-8")
+            except AttributeError:  # we got a plain python dict and not a pydantic model
+                body = json.dumps(test.payload).encode("utf-8")
+
+            request.add_header("Content-Length", str(len(body)))
 
         request.add_header("Content-Length", str(len(body)))
 
         if test.proxy is not None:
-            request.set_proxy(test.proxy, 'https')
+            request.set_proxy(test.proxy, 'http')
 
         timer = Timer()
         with timer:
             try:
-                response = urllib.request.urlopen(request, body)
+                if use_body:
+                    response = urllib.request.urlopen(request, body)
+                else:
+                    response = urllib.request.urlopen(request)
                 status_code = response.getcode()
             except urllib.error.HTTPError as e:
                 response = None
@@ -72,7 +82,7 @@ class WatchdogRunner:
                 email_to=test.email_to,
                 payload=test.payload,
                 response=None,
-                results=expectation_results
+                results=expectation_results,
             )
 
         assert response is not None
@@ -86,15 +96,26 @@ class WatchdogRunner:
         expectation_results = []
         for expectation in test.expectations:
             try:
-                for e in jq.compile(expectation.selector).input(response_parsed):
+                for e in jq.compile(expectation.selector).input(
+                    response_parsed
+                ):
                     expectation_error = self.resolve_expectation(expectation, e)
                     expectation_results.append(expectation_error)
             except ValueError:
                 # jq internal error
-                expectation_results.append(ExpectationResult(expectation=expectation, result="jq-error", actual=None))
+                expectation_results.append(
+                    ExpectationResult(
+                        expectation=expectation, result="jq-error", actual=None
+                    )
+                )
 
-        success = all([x.result == "success" for x in expectation_results])
-
+        success = all(
+            [
+                (x.result == "success" and x.expectation.level == ExpectationLevel.CRITICAL)
+                or (x.expectation.level != ExpectationLevel.CRITICAL)
+                for x in expectation_results
+            ]
+        )
 
         result = WatchdogResult(
             test_name=test.name,

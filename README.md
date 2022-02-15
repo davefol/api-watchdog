@@ -43,6 +43,23 @@ Available extensions are:
 
 If you do not want any validation support you can use the bare `pip install api-watchdog` command.
 
+## Docker Installation
+
+To run within Docker you can use the following command:
+
+```
+docker build -t api-watchdog .
+docker run -e MAILGUN_API_URL=X -e MAILGUN_API_TOKEN=X -e MAILGUN_FROM=X api-watchdog api-watchdog discover path/to/test/files
+```
+
+To run tests within Docker you can use the following command:
+
+```
+docker build -t api-watchdog .
+docker run api-watchdog python -m unittest discover tests
+```
+
+
 ## WatchdogTest format
 The main way you'll interface with API Watchdog is through `WatchdogTest`s.
 Each `WatchdogTest` has
@@ -58,6 +75,15 @@ Each `Expectation` has
 - selector (jq program): A string describing a jq program that selects the one or more elements to test against
 - value (Any): a value to test equality against
 - validation_type (ValidationType): An API Watchdog validation type used to validate the value/response. The value/response will be implicitly converted to this type. For example, if you specify 'float' and the value is an integer it will be implicitly converted to a float.
+- level (Optional[ExpectationLevel]): How important an expectation is. Defaults to "critical"
+
+## ExpectationLevel 
+One of the strings:
+- critical
+- warning
+- info
+Only "critical" expectations affect the success or failure of a `WatchdogTest`.
+
 
 The selector format is a string that is a [jq program](https://stedolan.github.io/jq/). This allows for rich selection capabilities. 
 For example:

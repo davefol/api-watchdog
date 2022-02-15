@@ -94,6 +94,7 @@ class TestCli(unittest.TestCase):
         vars(mocked_args)["search-directory"] = self.base_path
         mocked_args.pattern = "*.watchdog.json"
         mocked_args.output_path = None
+        mocked_args.email = False
 
         discover(mocked_args)
         expectation = (
@@ -131,7 +132,7 @@ class TestCli(unittest.TestCase):
         vars(mocked_args)["search-directory"] = self.base_path
         mocked_args.pattern = "*.watchdog.json"
         mocked_args.output_path = "some/random/path.json"
-
+        mocked_args.email = False
 
         discover(mocked_args)
 
@@ -147,8 +148,9 @@ class TestCli(unittest.TestCase):
                   "test_name": "1",
                   "target": "http://a.com/",
                   "success": true,
-                  "latency": 0,
+                  "latency": 0.0,
                   "timestamp": "1970-01-01T00:00:00+00:00",
+                  "email_to": null,
                   "payload": {
                     "val": 1
                   },
@@ -160,7 +162,8 @@ class TestCli(unittest.TestCase):
                       "expectation": {
                         "selector": ".val",
                         "value": 2,
-                        "validation_type": "int"
+                        "validation_type": "int",
+                        "level": "critical"
                       },
                       "result": "success",
                       "actual": 2
@@ -176,8 +179,9 @@ class TestCli(unittest.TestCase):
                       "test_name": "2",
                       "target": "http://a.com/b",
                       "success": true,
-                      "latency": 0,
+                      "latency": 0.0,
                       "timestamp": "1970-01-01T00:00:00+00:00",
+                      "email_to": null,
                       "payload": {
                         "val": 2
                       },
@@ -189,7 +193,8 @@ class TestCli(unittest.TestCase):
                           "expectation": {
                             "selector": ".val",
                             "value": 3,
-                            "validation_type": "int"
+                            "validation_type": "int",
+                            "level": "critical"
                           },
                           "result": "success",
                           "actual": 3
@@ -206,8 +211,9 @@ class TestCli(unittest.TestCase):
                       "test_name": "3",
                       "target": "http://a.com/c",
                       "success": true,
-                      "latency": 0,
+                      "latency": 0.0,
                       "timestamp": "1970-01-01T00:00:00+00:00",
+                      "email_to": null,
                       "payload": {
                         "val": 3
                       },
@@ -219,7 +225,8 @@ class TestCli(unittest.TestCase):
                           "expectation": {
                             "selector": ".val",
                             "value": 4,
-                            "validation_type": "int"
+                            "validation_type": "int",
+                            "level": "critical"
                           },
                           "result": "success",
                           "actual": 4

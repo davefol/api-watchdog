@@ -1,9 +1,10 @@
 import concurrent.futures
 import json
 import time
-from typing import Iterable, Iterator, Any, Optional
+from typing import Iterable, Iterator, Any
 import urllib.request
 import urllib.error
+import urllib
 
 import jq
 
@@ -36,6 +37,8 @@ class WatchdogRunner:
         request.add_header("accept", "application/json")
 
         use_body = False
+        body = None
+
         if test.payload:
             use_body = True
             try:
@@ -45,12 +48,19 @@ class WatchdogRunner:
 
             request.add_header("Content-Length", str(len(body)))
 
-        request.add_header("Content-Length", str(len(body)))
-
+        # use the proxy if found
         if test.proxy is not None:
-            request.set_proxy(test.proxy, 'http')
+            # create a proxy handler using the proxy address found in the test
+            proxy_handler = urllib.request.ProxyHandler({"http": test.proxy})
+
+            # create a opener for this request
+            opener = urllib.request.build_opener(proxy_handler)
+
+            # install the opener that uses the proxy
+            urllib.request.install_opener(opener)
 
         timer = Timer()
+
         with timer:
             try:
                 if use_body:
@@ -158,4 +168,3 @@ class WatchdogRunner:
             return ExpectationResult(
                 expectation=expectation, result="value", actual=validated_elem
             )
-

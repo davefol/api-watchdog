@@ -53,7 +53,6 @@ class ValidationType(Enum):
     TrapiAttribute          = "trapi.attribute"
     TrapiBiolinkEntity      = "trapi.biolink_entity"
     TrapiBiolinkPredicate   = "trapi.biolink_predicate"
-    TrapiCurie              = "trapi.curie"
     TrapiLogEntry           = "trapi.log_entry"
     TrapiLogLevel           = "trapi.log_level"
     TrapiMetaEdge           = "trapi.meta_edge"
@@ -87,7 +86,6 @@ validation_registry = {
     ValidationType.TrapiAttribute         : trapi.Attribute         ,
     ValidationType.TrapiBiolinkEntity     : trapi.BiolinkEntity     ,
     ValidationType.TrapiBiolinkPredicate  : trapi.BiolinkPredicate  ,
-    ValidationType.TrapiCurie             : trapi.CURIE             ,
     ValidationType.TrapiLogEntry          : trapi.LogEntry          ,
     ValidationType.TrapiLogLevel          : trapi.LogLevel          ,
     ValidationType.TrapiMetaEdge          : trapi.MetaEdge          ,

@@ -4,6 +4,7 @@ import time
 from typing import Iterable, Iterator, Any
 import urllib.request
 import urllib.error
+import ssl
 
 import jq
 
@@ -32,7 +33,7 @@ class WatchdogRunner:
 
     def run_test(self, test: WatchdogTest) -> WatchdogResult:
         method = test.method
-        
+
         request = urllib.request.Request(test.target, method=method)
         request.add_header("Content-Type", "application/json; charset=utf-8")
         request.add_header("accept", "application/json")
@@ -65,9 +66,9 @@ class WatchdogRunner:
         with timer:
             try:
                 if use_body:
-                    response = urllib.request.urlopen(request, body)
+                    response = urllib.request.urlopen(request, body, context=ssl._create_unverified_context())
                 else:
-                    response = urllib.request.urlopen(request)
+                    response = urllib.request.urlopen(request, context=ssl._create_unverified_context())
                 status_code = response.getcode()
             except urllib.error.HTTPError as e:
                 response = None

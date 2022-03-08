@@ -1,6 +1,7 @@
 from api_watchdog.collect import WatchdogResultGroup
 from api_watchdog.core import WatchdogResult, ExpectationResult
 
+
 def html_from_result_group(result_group: WatchdogResultGroup) -> str:
     def group_format(result_group: WatchdogResultGroup):
         html = (
@@ -97,5 +98,4 @@ def html_from_result_group(result_group: WatchdogResultGroup) -> str:
   </body>
 </html>
 """
-
     return html

@@ -4,7 +4,6 @@ import time
 from typing import Iterable, Iterator, Any
 import urllib.request
 import urllib.error
-import ssl
 
 import jq
 
@@ -66,9 +65,9 @@ class WatchdogRunner:
         with timer:
             try:
                 if use_body:
-                    response = urllib.request.urlopen(request, body, context=ssl._create_unverified_context())
+                    response = urllib.request.urlopen(request, body)
                 else:
-                    response = urllib.request.urlopen(request, context=ssl._create_unverified_context())
+                    response = urllib.request.urlopen(request)
                 status_code = response.getcode()
             except urllib.error.HTTPError as e:
                 response = None

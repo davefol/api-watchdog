@@ -69,9 +69,15 @@ class WatchdogRunner:
                 else:
                     response = urllib.request.urlopen(request)
                 status_code = response.getcode()
-            except urllib.error.HTTPError as e:
+            except (urllib.error.HTTPError, urllib.error.URLError) as e:
                 response = None
-                status_code = e.code
+                if isinstance(e, urllib.error.HTTPError):
+                    status_code = e.code
+                elif isinstance(e, urllib.error.URLError):
+                    status_code = 503
+            except:
+                response = None
+                status_code = 500
 
         latency = timer.time
 

@@ -2,6 +2,10 @@ import json
 import unittest
 from unittest.mock import patch, MagicMock
 
+from api_watchdog.core import WatchdogTest, Expectation
+from api_watchdog.runner import WatchdogRunner
+from api_watchdog.validate import ValidationType
+
 TRAPI_SKIP_MESSAGE = "TRAPI exentsion not installed"
 try:
     import reasoner_pydantic
@@ -10,17 +14,11 @@ try:
 except ImportError:
     TRAPI_ENABLED = False
 
-from api_watchdog.core import WatchdogTest, Expectation
-from api_watchdog.runner import WatchdogRunner
-from api_watchdog.validate import ValidationType
-
 
 class TestWatchdogRunner(unittest.TestCase):
     @patch("urllib.request.urlopen")
     def test_run_tests(self, mock_urlopen):
-        """
-        Test run_tests returns correct success parameter for each test
-        """
+        """Test run_tests returns correct success parameter for each test."""
 
         def get_response_mock(req, body=None):
             mock = MagicMock()
@@ -31,7 +29,7 @@ class TestWatchdogRunner(unittest.TestCase):
                     body_str = body.decode("utf-8")
                     if body_str:
                         data = json.loads(body_str)
-                
+
                     return json.dumps(
                         {
                             "magic_number": 0xFEEDFACE ^ int(data["magic_number"]),
@@ -55,7 +53,7 @@ class TestWatchdogRunner(unittest.TestCase):
                 target="http://test.com",
                 payload={"magic_number": 0xBADC0FFEE},
                 expectations=[
-                    Expectation(selector=".magic_number", value=-1, validation_type=ValidationType.Int) # incorrect value
+                    Expectation(selector=".magic_number", value=-1, validation_type=ValidationType.Int)  # incorrect value
                 ]
             ),
             WatchdogTest(
@@ -63,7 +61,7 @@ class TestWatchdogRunner(unittest.TestCase):
                 target="http://test.com",
                 payload={"magic_number": 0xBADF00D},
                 expectations=[
-                    Expectation(selector=".magic_number", value=0xFEEDFACE^0xBADF00D, validation_type=ValidationType.Int) # incorrect value
+                    Expectation(selector=".magic_number", value=0xFEEDFACE^0xBADF00D, validation_type=ValidationType.Int)  # incorrect value
                 ]
             ),
             WatchdogTest(
@@ -71,7 +69,7 @@ class TestWatchdogRunner(unittest.TestCase):
                 target="http://test.com",
                 payload={"magic_number": 0xFEEDFACE},
                 expectations=[
-                    Expectation(selector=".magic_number", value=0, validation_type=ValidationType.Int) # incorrect value
+                    Expectation(selector=".magic_number", value=0, validation_type=ValidationType.Int)  # incorrect value
                 ]
             ),
             WatchdogTest(
@@ -86,7 +84,7 @@ class TestWatchdogRunner(unittest.TestCase):
 
         runner = WatchdogRunner()
         results = sorted(runner.run_tests(tests), key=lambda x: x.test_name)
-        
+
         print(results)
 
         self.assertFalse(results[0].success)
@@ -147,15 +145,15 @@ class TestWatchdogRunner(unittest.TestCase):
                 target="http://test.com",
                 payload=reasoner_pydantic.message.Message(
                     query_graph=reasoner_pydantic.QueryGraph(
-                        nodes = {"BADC0FFEE": reasoner_pydantic.QNode()},
-                        edges = {}
+                        nodes={"BADC0FFEE": reasoner_pydantic.QNode()},
+                        edges={}
                     ),
                     knowledge_graph=reasoner_pydantic.KnowledgeGraph(
                         nodes={},
                         edges={}
                     )
                 ),
-                expectations = [
+                expectations=[
                     Expectation(
                         selector=".message.results[0].node_bindings.n0[0]",
                         validation_type=ValidationType.TrapiNodeBinding,
@@ -179,18 +177,18 @@ class TestWatchdogRunner(unittest.TestCase):
                                 reasoner_pydantic.Result(
                                     node_bindings={
                                         "n0": [
-                                          {
-                                            "id": "MONDO:0005618"
-                                          }
+                                            {
+                                                "id": "MONDO:0005618"
+                                            }
                                         ],
                                         "n1": [
-                                          {
-                                            "id": "MONDO:0024613"
-                                          }
+                                            {
+                                                "id": "MONDO:0024613"
+                                            }
                                         ]
                                     },
                                     edge_bindings={},
-                                    score = -1
+                                    score=-1
                                 )
                             ]
                         )
@@ -202,15 +200,15 @@ class TestWatchdogRunner(unittest.TestCase):
                 target="http://test.com",
                 payload=reasoner_pydantic.message.Message(
                     query_graph=reasoner_pydantic.QueryGraph(
-                        nodes = {"BADF00D": reasoner_pydantic.QNode()},
-                        edges = {}
+                        nodes={"BADF00D": reasoner_pydantic.QNode()},
+                        edges={}
                     ),
                     knowledge_graph=reasoner_pydantic.KnowledgeGraph(
                         nodes={},
                         edges={}
                     )
                 ),
-                expectations = [
+                expectations=[
                     Expectation(
                         selector=".message.results[0].node_bindings.n0[0]",
                         validation_type=ValidationType.TrapiNodeBinding,
@@ -234,18 +232,18 @@ class TestWatchdogRunner(unittest.TestCase):
                                 reasoner_pydantic.Result(
                                     node_bindings={
                                         "n0": [
-                                          {
-                                            "id": "MONDO:0005618"
-                                          }
+                                            {
+                                                "id": "MONDO:0005618"
+                                            }
                                         ],
                                         "n1": [
-                                          {
-                                            "id": "MONDO:0024613"
-                                          }
+                                            {
+                                                "id": "MONDO:0024613"
+                                            }
                                         ]
                                     },
                                     edge_bindings={},
-                                    score = 0xFEEDFACE ^ 0xBADF00D
+                                    score=0xFEEDFACE ^ 0xBADF00D
                                 )
                             ]
                         )
@@ -257,15 +255,15 @@ class TestWatchdogRunner(unittest.TestCase):
                 target="http://test.com",
                 payload=reasoner_pydantic.message.Message(
                     query_graph=reasoner_pydantic.QueryGraph(
-                        nodes = {"FEEDFACE": reasoner_pydantic.QNode()},
-                        edges = {}
+                        nodes={"FEEDFACE": reasoner_pydantic.QNode()},
+                        edges={}
                     ),
                     knowledge_graph=reasoner_pydantic.KnowledgeGraph(
                         nodes={},
                         edges={}
                     )
                 ),
-                expectations = [
+                expectations=[
                     Expectation(
                         selector=".message.results[0].node_bindings.n0[0]",
                         validation_type=ValidationType.TrapiNodeBinding,
@@ -289,18 +287,18 @@ class TestWatchdogRunner(unittest.TestCase):
                                 reasoner_pydantic.Result(
                                     node_bindings={
                                         "n0": [
-                                          {
-                                            "id": "MONDO:0005618"
-                                          }
+                                            {
+                                                "id": "MONDO:0005618"
+                                            }
                                         ],
                                         "n1": [
-                                          {
-                                            "id": "MONDO:0024613"
-                                          }
+                                            {
+                                                "id": "MONDO:0024613"
+                                            }
                                         ]
                                     },
                                     edge_bindings={},
-                                    score = 0
+                                    score=0
                                 )
                             ]
                         )
@@ -314,6 +312,7 @@ class TestWatchdogRunner(unittest.TestCase):
         self.assertFalse(results[0].success)
         self.assertTrue(results[1].success)
         self.assertTrue(results[2].success)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -4,25 +4,30 @@ from pydantic import ValidationError as PydanticValidationError
 
 from api_watchdog.integrations import trapi
 
+
 class ValidationError(Exception):
-    """Raised when an object fails to validate"""
+    """Raised when an object fails to validate."""
+
 
 class UnknownValidationTypeError(Exception):
-    """Raised when an unknown ValidationType is provided"""
+    """Raised when an unknown ValidationType is provided."""
+
 
 class UnsupportedValidationTypeError(Exception):
     """
-    Raised when an unsupported ValidationType is provided
+    Raised when an unsupported ValidationType is provided.
 
     eg. using a trapi.* ValidationType when the library
     is not installed with TRAPI
 
     """
 
+
 def validate_none(x):
-    """Test whether object is None and returns none"""
+    """Test whether object is None and returns none."""
     if x is not None:
         raise ValidationError
+
 
 class ValidationType(Enum):
     # Plain JSON types
@@ -60,6 +65,7 @@ class ValidationType(Enum):
     TrapiMetaKnowledgeGraph = "trapi.meta_knowledge_graph"
     TrapiMetaAttribute      = "trapi.meta_attribute"
 
+
 validation_registry = {
     ValidationType.String                 : str                     ,
     ValidationType.Int                    : int                     ,
@@ -94,9 +100,10 @@ validation_registry = {
     ValidationType.TrapiMetaAttribute     : trapi.MetaAttribute     ,
 }
 
+
 def validate(x: Any, validation_type: ValidationType):
     """
-    Converts object into corresponding type.
+    Convert object into corresponding type.
 
     Raises ValidationError if the object fails to validate
     """
@@ -117,4 +124,3 @@ def validate(x: Any, validation_type: ValidationType):
         raise ValidationError(f"{x} is not a valid {validation_type}") from e
     except PydanticValidationError as e:
         raise ValidationError(f"{x} is not a valid {validation_type}") from e
-

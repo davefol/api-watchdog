@@ -4,10 +4,10 @@ from typing import Optional, Dict, Tuple, Literal, List
 
 import requests
 
+
 class MailgunMixin:
-    """
-    Mixing that allows a class to send an email
-    """
+    """Mixin that allows a class to send an email."""
+
     def __init__(
         self,
         url: Optional[str] = None,

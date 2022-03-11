@@ -18,6 +18,7 @@ def topological_print(result_group, file=None):
     for group in sorted(result_group.groups, key=lambda g: g.name):
         topological_print(group, file=file)
 
+
 def discover(args):
     runner = WatchdogRunner()
     tests = [
@@ -34,6 +35,7 @@ def discover(args):
             fp.write(grouped_results.json())
     else:
         topological_print(grouped_results)
+
 
 def cli():
     parser = ArgumentParser(description="API Watchdog CLI")

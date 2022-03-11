@@ -4,7 +4,8 @@ try:
     from reasoner_pydantic import *
 except ImportError:
     reasoner_pydantic = SimpleNamespace()
-        #raise NotImplementedError("Must install with 'TRAPI' extension")
+    # raise NotImplementedError("Must install with 'TRAPI' extension")
+
 
 def istrapi(x):
     module = getattr(x, '__module__', None)
@@ -12,4 +13,3 @@ def istrapi(x):
         return module.startswith("reasoner_pydantic")
     else:
         return False
-

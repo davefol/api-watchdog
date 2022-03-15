@@ -2,8 +2,9 @@ import concurrent.futures
 import json
 import time
 from typing import Iterable, Iterator, Any
-import urllib.request
-import urllib.error
+# import urllib.request
+# import urllib.error
+import requests
 
 import jq
 
@@ -31,51 +32,53 @@ class WatchdogRunner:
         self.max_workers = max_workers
 
     def run_test(self, test: WatchdogTest) -> WatchdogResult:
+        """
+        runs the watchdog tests found in the api-watchdog-translator-tests repo.
+
+        note: the environment variable HTTPS_PROXY must be set in order for translator endpoints
+        to be accessed properly
+
+        :param test:
+        :return:
+        """
         method = test.method
 
-        request = urllib.request.Request(test.target, method=method)
-        request.add_header("Content-Type", "application/json; charset=utf-8")
-        request.add_header("accept", "application/json")
+        # set the baseline request headers
+        headers = {"Content-Type": "application/json; charset=utf-8", "accept": "application/json"}
 
+        # init some flags for payload state
         use_body = False
         body = None
 
+        # if we have something to post
         if test.payload:
             use_body = True
+
             try:
                 body = test.payload.json().encode("utf-8")
             except AttributeError:  # we got a plain python dict and not a pydantic model
                 body = json.dumps(test.payload).encode("utf-8")
 
-            request.add_header("Content-Length", str(len(body)))
-
-        # use the proxy if found
-        if test.proxy is not None:
-            # create a proxy handler using the proxy address found in the test
-            proxy_handler = urllib.request.ProxyHandler({"http": test.proxy})
-
-            # create a opener for this request
-            opener = urllib.request.build_opener(proxy_handler)
-
-            # install the opener that uses the proxy
-            urllib.request.install_opener(opener)
+            # add headers for the amount of data going to be sent
+            headers.update({"Content-Length": str(len(body))})
 
         timer = Timer()
 
         with timer:
             try:
+                # if there is a payload this is going to be a post
                 if use_body:
-                    response = urllib.request.urlopen(request, body)
+                    response = requests.post(test.target, body)
+                # else we are just sending something simple on the url. the response should still be json
                 else:
-                    response = urllib.request.urlopen(request)
-                status_code = response.getcode()
-            except (urllib.error.HTTPError, urllib.error.URLError) as e:
+                    response = requests.get(test.target)
+
+                # grab the status code for later
+                status_code = response.status_code
+            except requests.RequestException as e:
                 response = None
-                if isinstance(e, urllib.error.HTTPError):
-                    status_code = e.code
-                elif isinstance(e, urllib.error.URLError):
-                    status_code = 503
-            except:
+                status_code = 503
+            except Exception as e:
                 response = None
                 status_code = 500
 
@@ -103,12 +106,9 @@ class WatchdogRunner:
             )
 
         assert response is not None
-        response_data = response.read()
-        response_data = response_data.decode(
-            response.info().get_content_charset("utf-8")
-        )
 
-        response_parsed = json.loads(response_data)
+        # grab the response in json format
+        response_parsed = response.json()
 
         expectation_results = []
         for expectation in test.expectations:

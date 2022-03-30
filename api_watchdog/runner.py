@@ -43,9 +43,6 @@ class WatchdogRunner:
         """
         method = test.method
 
-        # set the baseline request headers
-        headers = {"Content-Type": "application/json; charset=utf-8", "accept": "application/json"}
-
         # init some flags for payload state
         use_body = False
         body = None
@@ -58,9 +55,6 @@ class WatchdogRunner:
                 body = test.payload.json().encode("utf-8")
             except AttributeError:  # we got a plain python dict and not a pydantic model
                 body = json.dumps(test.payload).encode("utf-8")
-
-            # add headers for the amount of data going to be sent
-            headers.update({"Content-Length": str(len(body))})
 
         timer = Timer()
 

@@ -62,10 +62,10 @@ class WatchdogRunner:
             try:
                 # if there is a payload this is going to be a post
                 if use_body:
-                    response = requests.post(test.target, body)
+                    response = requests.request(method, url=test.target, data=body)
                 # else we are just sending something simple on the url. the response should still be json
                 else:
-                    response = requests.get(test.target)
+                    response = requests.request(method, url=test.target)
 
                 # grab the status code for later
                 status_code = response.status_code

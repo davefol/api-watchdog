@@ -16,36 +16,32 @@ except ImportError:
 
 
 class TestWatchdogRunner(unittest.TestCase):
-    @patch("urllib.request.urlopen")
-    def test_run_tests(self, mock_urlopen):
+    @patch("requests.request")
+    def test_run_tests(self, mock_request):
         """Test run_tests returns correct success parameter for each test."""
 
-        def get_response_mock(req, body=None):
+        def get_response_mock(method, url=None, data=None):
             mock = MagicMock()
-            mock.getcode.return_value = 200
+            mock.status_code = 200
 
             def mocked_read():
-                if body:
-                    body_str = body.decode("utf-8")
+                nonlocal data
+                if data:
+                    body_str = data.decode("utf-8")
                     if body_str:
                         data = json.loads(body_str)
 
-                    return json.dumps(
-                        {
-                            "magic_number": 0xFEEDFACE ^ int(data["magic_number"]),
-                        }
-                    ).encode("utf-8")
-                return json.dumps(
-                    {
-                        "empty_body": True,
+                    return {
+                        "magic_number": 0xFEEDFACE ^ int(data["magic_number"]),
                     }
-                ).encode("utf-8")
+                return {
+                    "empty_body": True,
+                }
 
-            mock.read.side_effect = mocked_read
-            mock.info.return_value.get_content_charset.return_value = "utf-8"
+            mock.json = mocked_read
             return mock
 
-        mock_urlopen.side_effect = get_response_mock
+        mock_request.side_effect = get_response_mock
 
         tests = [
             WatchdogTest(
@@ -61,7 +57,7 @@ class TestWatchdogRunner(unittest.TestCase):
                 target="http://test.com",
                 payload={"magic_number": 0xBADF00D},
                 expectations=[
-                    Expectation(selector=".magic_number", value=0xFEEDFACE^0xBADF00D, validation_type=ValidationType.Int)  # incorrect value
+                    Expectation(selector=".magic_number", value=0xFEEDFACE ^ 0xBADF00D, validation_type=ValidationType.Int)  # incorrect value
                 ]
             ),
             WatchdogTest(
@@ -85,59 +81,55 @@ class TestWatchdogRunner(unittest.TestCase):
         runner = WatchdogRunner()
         results = sorted(runner.run_tests(tests), key=lambda x: x.test_name)
 
-        print(results)
-
         self.assertFalse(results[0].success)
         self.assertTrue(results[1].success)
         self.assertTrue(results[2].success)
         self.assertTrue(results[3].success)
 
     @unittest.skipIf(not TRAPI_ENABLED, TRAPI_SKIP_MESSAGE)
-    @patch("urllib.request.urlopen")
-    def test_run_tests_trapi_validation(self, mock_urlopen):
+    @patch("requests.request")
+    def test_run_tests_trapi_validation(self, mock_request):
         """
         Test run_tests returns correct success parameter for each test when
         there payload and expectation are TRAPI validated
         """
 
-        def get_response_mock(req, body):
+        def get_response_mock(method, url=None, data=None):
             mock = MagicMock()
-            mock.getcode.return_value = 200
+            mock.status_code = 200
 
             def mocked_read():
-                data = json.loads(body.decode("utf-8"))
+                nonlocal data
+                data = json.loads(data.decode("utf-8"))
                 magic_number = list(data["query_graph"]["nodes"].keys())[0]
                 magic_number = 0xFEEDFACE ^ int(magic_number, 16)
-                return json.dumps(
-                    {
-                        "message": {
-                            "results": [
-                                {
-                                    "node_bindings": {
-                                        "n0": [
-                                          {
-                                            "id": "MONDO:0005618"
-                                          }
-                                        ],
-                                        "n1": [
-                                          {
-                                            "id": "MONDO:0024613"
-                                          }
-                                        ]
-                                      },
-                                    "edge_bindings": {},
-                                    "score": magic_number
-                                }
-                            ]
-                        }
+                return {
+                    "message": {
+                        "results": [
+                            {
+                                "node_bindings": {
+                                    "n0": [
+                                        {
+                                        "id": "MONDO:0005618"
+                                        }
+                                    ],
+                                    "n1": [
+                                        {
+                                        "id": "MONDO:0024613"
+                                        }
+                                    ]
+                                    },
+                                "edge_bindings": {},
+                                "score": magic_number
+                            }
+                        ]
                     }
-                ).encode("utf-8")
+                }
 
-            mock.read.side_effect = mocked_read
-            mock.info.return_value.get_content_charset.return_value = "utf-8"
+            mock.json = mocked_read
             return mock
 
-        mock_urlopen.side_effect = get_response_mock
+        mock_request.side_effect = get_response_mock
 
         tests = [
             WatchdogTest(

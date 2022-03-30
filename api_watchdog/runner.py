@@ -2,8 +2,6 @@ import concurrent.futures
 import json
 import time
 from typing import Iterable, Iterator, Any
-# import urllib.request
-# import urllib.error
 import requests
 
 import jq
@@ -33,7 +31,7 @@ class WatchdogRunner:
 
     def run_test(self, test: WatchdogTest) -> WatchdogResult:
         """
-        runs the watchdog tests found in the api-watchdog-translator-tests repo.
+        Run the watchdog tests found in the api-watchdog-translator-tests repo.
 
         note: the environment variable HTTPS_PROXY must be set in order for translator endpoints
         to be accessed properly

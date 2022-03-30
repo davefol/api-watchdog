@@ -1,0 +1,24 @@
+name: 'Pull Request Feedback'
+
+on:
+  pull_request:
+
+jobs:
+  test:
+    name: Run unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repo
+        uses: actions/checkout@v2
+      
+      - uses: satackey/action-docker-layer-caching@v0.0.8
+        continue-on-error: true
+      
+      - name: Build
+        run: docker build -t api-watchdog-testing -f Dockerfile.test .
+
+      - name: Run unit tests
+        run: |
+          echo 'TEST_OUTPUT<<EOF' >> $GITHUB_ENV
+          echo "$(docker run api-watchdog-testing)" >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV

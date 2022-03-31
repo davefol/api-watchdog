@@ -18,7 +18,7 @@ setup(
     version=version(),
     packages=find_packages(),
     license="MIT",
-    authot="David Folarin",
+    author="CoVar",
     description="API watchdog",
     long_description=readme(),
     long_description_content_type="text/markdown",

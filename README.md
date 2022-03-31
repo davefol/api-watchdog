@@ -65,6 +65,7 @@ The main way you'll interface with API Watchdog is through `WatchdogTest`s.
 Each `WatchdogTest` has
 - name (str): The name of the test
 - target (url): The endpoint that the test targets
+- method (str): HTTP request type, i.e. POST, GET
 - expectations (Array[Expectation]): A list of requirements that the response must meet for the test to pass.
 - payload (object): The json passed to the endpoint.
 

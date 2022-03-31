@@ -1,0 +1,16 @@
+# leverage the renci python base image
+FROM renciorg/renci-python-image:v0.0.1
+
+# set up working directory
+WORKDIR /app
+
+# Install dependencies
+ADD setup.py VERSION README.md ./
+RUN python setup.py egg_info && pip install `grep -v '^\[' *.egg-info/requires.txt`
+
+# Add the rest of the code and install package
+ADD . .
+
+RUN pip install .[TRAPI]
+
+CMD python -m unittest discover ./tests

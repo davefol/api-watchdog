@@ -70,24 +70,22 @@ class TestCli(unittest.TestCase):
 
     @patch("time.time", MagicMock(return_value=0.0))
     @patch("sys.stdout", new_callable=io.StringIO)
-    @patch("urllib.request.urlopen")
-    def test_discover_print_to_stdout(self, mock_urlopen, mock_stdout):
+    @patch("requests.request")
+    def test_discover_print_to_stdout(self, mock_request, mock_stdout):
         """Test that discover finds finds and prints them to stdout."""
-        def get_response_mock(req, body):
+        def get_response_mock(method, url=None, data=None):
             mock = MagicMock()
-            mock.getcode.return_value = 200
+            mock.status_code = 200
 
-            def mocked_read():
-                data = json.loads(body.decode("utf-8"))
-                return json.dumps(
-                    {"val": data["val"] + 1}
-                ).encode("utf-8")
+            def mock_read():
+                nonlocal data
+                data = json.loads(data.decode("utf-8"))
+                return {"val": data["val"] + 1}
 
-            mock.read.side_effect = mocked_read
-            mock.info.return_value.get_content_charset.return_value = "utf-8"
+            mock.json = mock_read
             return mock
 
-        mock_urlopen.side_effect = get_response_mock
+        mock_request.side_effect = get_response_mock
         mocked_args = MagicMock()
         vars(mocked_args)["search-directory"] = self.base_path
         mocked_args.pattern = "*.watchdog.json"
@@ -104,25 +102,22 @@ class TestCli(unittest.TestCase):
 
     @patch("time.time", MagicMock(return_value=0.0))
     @patch("builtins.open", new_callable=mock_open)
-    @patch("urllib.request.urlopen")
-    def test_discover_write_to_file(self, mock_urlopen, mock_stdout):
+    @patch("requests.request")
+    def test_discover_write_to_file(self, mock_request, mock_stdout):
         """Test that discover finds finds and writes them to file."""
-        def get_response_mock(req, body):
+        def get_response_mock(method, url=None, data=None):
             mock = MagicMock()
-            mock.getcode.return_value = 200
+            mock.status_code = 200
 
-            def mocked_read():
-                data = json.loads(body.decode("utf-8"))
-                return json.dumps(
-                    {"val": data["val"] + 1}
-                ).encode("utf-8")
+            def mock_read():
+                nonlocal data
+                data = json.loads(data.decode("utf-8"))
+                return {"val": data["val"] + 1}
 
-            mock.read.side_effect = mocked_read
-            mock.info.return_value.get_content_charset.return_value = "utf-8"
+            mock.json = mock_read
             return mock
 
-
-        mock_urlopen.side_effect = get_response_mock
+        mock_request.side_effect = get_response_mock
         mocked_args = MagicMock()
         vars(mocked_args)["search-directory"] = self.base_path
         mocked_args.pattern = "*.watchdog.json"

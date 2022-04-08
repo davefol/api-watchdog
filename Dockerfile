@@ -1,9 +1,6 @@
 # leverage the renci python base image
 FROM renciorg/renci-python-image:v0.0.1
 
-# switch to the new user created in the above image
-USER nru
-
 # set up working directory
 WORKDIR /app
 
@@ -19,3 +16,5 @@ ADD . .
 
 RUN pip install .[TRAPI]
 
+# switch to the new user created in the above image
+USER nru

@@ -73,14 +73,13 @@ class TestCli(unittest.TestCase):
     @patch("requests.request")
     def test_discover_print_to_stdout(self, mock_request, mock_stdout):
         """Test that discover finds finds and prints them to stdout."""
-        def get_response_mock(method, url=None, data=None):
+        def get_response_mock(method, url=None, json=None, timeout=120):
             mock = MagicMock()
             mock.status_code = 200
 
             def mock_read():
-                nonlocal data
-                data = json.loads(data.decode("utf-8"))
-                return {"val": data["val"] + 1}
+                nonlocal json
+                return {"val": json["val"] + 1}
 
             mock.json = mock_read
             return mock
@@ -105,14 +104,13 @@ class TestCli(unittest.TestCase):
     @patch("requests.request")
     def test_discover_write_to_file(self, mock_request, mock_stdout):
         """Test that discover finds finds and writes them to file."""
-        def get_response_mock(method, url=None, data=None):
+        def get_response_mock(method, url=None, json=None, timeout=120):
             mock = MagicMock()
             mock.status_code = 200
 
             def mock_read():
-                nonlocal data
-                data = json.loads(data.decode("utf-8"))
-                return {"val": data["val"] + 1}
+                nonlocal json
+                return {"val": json["val"] + 1}
 
             mock.json = mock_read
             return mock

@@ -1,4 +1,3 @@
-import json
 import unittest
 from unittest.mock import patch, MagicMock
 
@@ -20,19 +19,15 @@ class TestWatchdogRunner(unittest.TestCase):
     def test_run_tests(self, mock_request):
         """Test run_tests returns correct success parameter for each test."""
 
-        def get_response_mock(method, url=None, data=None):
+        def get_response_mock(method, url=None, json=None, timeout=120):
             mock = MagicMock()
             mock.status_code = 200
 
             def mocked_read():
-                nonlocal data
-                if data:
-                    body_str = data.decode("utf-8")
-                    if body_str:
-                        data = json.loads(body_str)
-
+                nonlocal json
+                if json:
                     return {
-                        "magic_number": 0xFEEDFACE ^ int(data["magic_number"]),
+                        "magic_number": 0xFEEDFACE ^ int(json["magic_number"]),
                     }
                 return {
                     "empty_body": True,
@@ -94,14 +89,13 @@ class TestWatchdogRunner(unittest.TestCase):
         there payload and expectation are TRAPI validated
         """
 
-        def get_response_mock(method, url=None, data=None):
+        def get_response_mock(method, url=None, json=None, timeout=120):
             mock = MagicMock()
             mock.status_code = 200
 
             def mocked_read():
-                nonlocal data
-                data = json.loads(data.decode("utf-8"))
-                magic_number = list(data["query_graph"]["nodes"].keys())[0]
+                nonlocal json
+                magic_number = list(json["query_graph"]["nodes"].keys())[0]
                 magic_number = 0xFEEDFACE ^ int(magic_number, 16)
                 return {
                     "message": {
@@ -110,15 +104,15 @@ class TestWatchdogRunner(unittest.TestCase):
                                 "node_bindings": {
                                     "n0": [
                                         {
-                                        "id": "MONDO:0005618"
+                                            "id": "MONDO:0005618"
                                         }
                                     ],
                                     "n1": [
                                         {
-                                        "id": "MONDO:0024613"
+                                            "id": "MONDO:0024613"
                                         }
                                     ]
-                                    },
+                                },
                                 "edge_bindings": {},
                                 "score": magic_number
                             }

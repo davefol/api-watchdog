@@ -1,5 +1,6 @@
 import concurrent.futures
 import json
+import logging
 import time
 from typing import Iterable, Iterator, Any
 import requests
@@ -65,10 +66,17 @@ class WatchdogRunner:
 
                 # grab the status code for later
                 status_code = response.status_code
+                logging.info(f'{test.name}: {status_code}')
+            except requests.Timeout as e:
+                logging.error(f'{test.name} Timeout: {e}')
+                response = None
+                status_code = 408
             except requests.RequestException as e:
+                logging.error(f'{test.name} Request Error: {e}')
                 response = None
                 status_code = 503
             except Exception as e:
+                logging.error(f'{test.name} Exception: {e}')
                 response = None
                 status_code = 500
 

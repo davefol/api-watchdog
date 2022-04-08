@@ -1,4 +1,5 @@
 from argparse import ArgumentParser
+import logging
 from pathlib import Path
 import sys
 
@@ -6,6 +7,8 @@ from api_watchdog.collect import collect_results
 from api_watchdog.core import WatchdogTest
 from api_watchdog.runner import WatchdogRunner
 from api_watchdog.hooks.result_group.mailgun import ResultGroupHookMailgun
+
+logging.basicConfig(filename='api_watchog.log', level=logging.INFO, format='%(asctime)s | %(levelname)s | %(message)s')
 
 
 def topological_print(result_group, file=None):

@@ -1,5 +1,6 @@
 import concurrent.futures
 import json
+import logging
 import time
 from typing import Iterable, Iterator, Any
 import requests
@@ -42,35 +43,40 @@ class WatchdogRunner:
         method = test.method
 
         # init some flags for payload state
-        use_body = False
         body = None
 
-        # if we have something to post
+        # if we have a test payload
         if test.payload:
-            use_body = True
-
             try:
-                body = test.payload.json().encode("utf-8")
+                # pydantic .json() returns a string, need to make JSON
+                body = json.loads(test.payload.json())
             except AttributeError:  # we got a plain python dict and not a pydantic model
-                body = json.dumps(test.payload).encode("utf-8")
+                body = test.payload
 
         timer = Timer()
 
         with timer:
             try:
-                # if there is a payload this is going to be a post
-                if use_body:
-                    response = requests.request(method, url=test.target, data=body)
+                if body is not None:
+                    assert type(body) == dict, 'test.payload must be a dict.'
+                    response = requests.request(method, url=test.target, json=body, timeout=120)
                 # else we are just sending something simple on the url. the response should still be json
                 else:
-                    response = requests.request(method, url=test.target)
+                    response = requests.request(method, url=test.target, timeout=120)
 
                 # grab the status code for later
                 status_code = response.status_code
+                logging.info(f'{test.name}: {status_code}')
+            except requests.Timeout as e:
+                logging.error(f'{test.name} Timeout: {e}')
+                response = None
+                status_code = 408
             except requests.RequestException as e:
+                logging.error(f'{test.name} Request Error: {e}')
                 response = None
                 status_code = 503
             except Exception as e:
+                logging.error(f'{test.name} Exception: {e}')
                 response = None
                 status_code = 500
 

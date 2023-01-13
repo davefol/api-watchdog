@@ -8,16 +8,14 @@ from api_watchdog.core import WatchdogTest
 from api_watchdog.runner import WatchdogRunner
 from api_watchdog.hooks.result_group.mailgun import ResultGroupHookMailgun
 
-logging.basicConfig(filename='api_watchog.log', level=logging.INFO, format='%(asctime)s | %(levelname)s | %(message)s')
+logging.basicConfig(level=logging.INFO, format='[%(asctime)s: %(levelname)s/%(name)s]: %(message)s')
+logger = logging.getLogger(__name__)
 
 
 def topological_print(result_group, file=None):
     file = file or sys.stdout
     for result in sorted(result_group.results, key=lambda g: g.test_name):
-        print(
-            f"{result.test_name:<20} {'Pass' if result.success else 'Fail'} {result.latency:<12.3f}",
-            file=file,
-        )
+        logger.info(f"[{result_group.name}]: {result.test_name:<20} {'passed' if result.success else 'failed'} in {result.latency:<12.3f}")
     for group in sorted(result_group.groups, key=lambda g: g.name):
         topological_print(group, file=file)
 

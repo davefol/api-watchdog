@@ -1,9 +1,11 @@
 import io
+import logging
 import os
 from typing import Optional, Dict, Tuple, Literal, List
 
 import requests
 
+logger = logging.getLogger(__name__)
 
 class MailgunMixin:
     """Mixin that allows a class to send an email."""
@@ -27,19 +29,22 @@ class MailgunMixin:
             }
         return self._send_data(data)
 
-    def send_html_email(self, to: str, subject: str, html: str, attachments: Optional[List[Tuple[Literal["attachment"], io.BytesIO]]]= None):
+    def send_html_email(self, to: str, subject: str, html: str):
         data = {
                 "from": self.from_address,
                 "to": to,
                 "subject": subject,
                 "html": html,
             }
-        return self._send_data(data, attachments=attachments)
+        return self._send_data(data)
 
-    def _send_data(self, data, attachments: Optional[List[Tuple[Literal["attachment"], io.BytesIO]]] = None):
-        return requests.post(
+    def _send_data(self, data):
+        logger.info(f"Sending request to {self.url}")
+        response = requests.post(
             self.url,
             auth=("api", self.token),
-            files=attachments,
             data=data,
+            timeout=60,
         )
+        logger.info(f"Got response from {self.url}: {response.json()}")
+        return response

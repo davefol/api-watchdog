@@ -112,7 +112,7 @@ The possible validation types are
 - "trapi.query_graph",
 - "trapi.q_node",
 - "trapi.q_edge",
-- "trapi.query_constraint",
+- "trapi.attribute_constraint",
 - "trapi.result",
 - "trapi.node_binding",
 - "trapi.edge_binding",

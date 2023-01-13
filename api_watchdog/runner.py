@@ -17,6 +17,8 @@ from api_watchdog.core import (
 from api_watchdog.result_error import ResultError
 from api_watchdog.validate import validate, ValidationError
 
+logger = logging.getLogger(__name__)
+
 
 class Timer:
     def __enter__(self):
@@ -40,6 +42,7 @@ class WatchdogRunner:
         :param test:
         :return:
         """
+        logger.info(f"[{test.target}]: Running {test.name}...")
         method = test.method
 
         # init some flags for payload state
@@ -66,21 +69,21 @@ class WatchdogRunner:
 
                 # grab the status code for later
                 status_code = response.status_code
-                logging.info(f'{test.name}: {status_code}')
             except requests.Timeout as e:
-                logging.error(f'{test.name} Timeout: {e}')
+                logger.error(f'{test.name} Timeout: {e}')
                 response = None
                 status_code = 408
             except requests.RequestException as e:
-                logging.error(f'{test.name} Request Error: {e}')
+                logger.error(f'{test.name} Request Error: {e}')
                 response = None
                 status_code = 503
             except Exception as e:
-                logging.error(f'{test.name} Exception: {e}')
+                logger.error(f'{test.name} Exception: {e}')
                 response = None
                 status_code = 500
 
         latency = timer.time
+        logger.info(f"[{test.target}]: {test.name} took {latency} with status code {status_code}")
 
         if 400 <= status_code <= 599:
             expectation_results = [

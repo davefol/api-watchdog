@@ -27,19 +27,17 @@ class MailgunMixin:
             }
         return self._send_data(data)
 
-    def send_html_email(self, to: str, subject: str, html: str, attachments: Optional[List[Tuple[Literal["attachment"], io.BytesIO]]]= None):
+    def send_html_email(self, to: str, subject: str, html: str):
         data = {
                 "from": self.from_address,
                 "to": to,
                 "subject": subject,
                 "html": html,
             }
-        return self._send_data(data, attachments=attachments)
+        return self._send_data(data)
 
-    def _send_data(self, data, attachments: Optional[List[Tuple[Literal["attachment"], io.BytesIO]]] = None):
-        return requests.post(
+    def _send_data(self, data):
             self.url,
             auth=("api", self.token),
-            files=attachments,
             data=data,
         )

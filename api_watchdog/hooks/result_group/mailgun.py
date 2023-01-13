@@ -57,8 +57,6 @@ class ResultGroupHookMailgun(MailgunMixin, ResultGroupHook):
     def __call__(self, result_group: WatchdogResultGroup):
         receivers = email_receivers(result_group)
         subject = "Watchdog Result Summary"
-        result_group_bytes = io.BytesIO(result_group.json().encode("utf-8"))
-        result_group_bytes.name = f"{int(time.time())}_results.json"
         for receiver in receivers:
             to = receiver
             filtered_result_group = filter_result_group(
@@ -68,6 +66,4 @@ class ResultGroupHookMailgun(MailgunMixin, ResultGroupHook):
                 to=to,
                 subject=subject,
                 html=html_from_result_group(filtered_result_group),
-                attachments=[("attachment", result_group_bytes)]
             )
-            result_group_bytes.seek(0)

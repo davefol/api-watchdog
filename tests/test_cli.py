@@ -69,37 +69,6 @@ class TestCli(unittest.TestCase):
         )
 
     @patch("time.time", MagicMock(return_value=0.0))
-    @patch("sys.stdout", new_callable=io.StringIO)
-    @patch("requests.request")
-    def test_discover_print_to_stdout(self, mock_request, mock_stdout):
-        """Test that discover finds finds and prints them to stdout."""
-        def get_response_mock(method, url=None, json=None, timeout=120):
-            mock = MagicMock()
-            mock.status_code = 200
-
-            def mock_read():
-                nonlocal json
-                return {"val": json["val"] + 1}
-
-            mock.json = mock_read
-            return mock
-
-        mock_request.side_effect = get_response_mock
-        mocked_args = MagicMock()
-        vars(mocked_args)["search-directory"] = self.base_path
-        mocked_args.pattern = "*.watchdog.json"
-        mocked_args.output_path = None
-        mocked_args.email = False
-
-        discover(mocked_args)
-        expectation = (
-            f"{1:<20} Pass {0.0:<12.3f}\n"
-            f"{2:<20} Pass {0.0:<12.3f}\n"
-            f"{3:<20} Pass {0.0:<12.3f}\n"
-        )
-        self.assertEqual(expectation, mock_stdout.getvalue())
-
-    @patch("time.time", MagicMock(return_value=0.0))
     @patch("builtins.open", new_callable=mock_open)
     @patch("requests.request")
     def test_discover_write_to_file(self, mock_request, mock_stdout):

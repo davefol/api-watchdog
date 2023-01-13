@@ -23,12 +23,14 @@ setup(
     long_description=readme(),
     long_description_content_type="text/markdown",
     install_requires=[
-        "pydantic>=1.8.2",
-        "jq>=1.2.1",
-        "requests>=2.26.0"
+        "pydantic>=1.10.4",
+        "jq>=1.4.0",
+        "requests>=2.28.2"
     ],
     extras_require={
-        "TRAPI": ["reasoner-pydantic"]
+        "TRAPI": [
+            "reasoner-pydantic>=3.0.1",
+        ],
     },
     entry_points={"console_scripts": [
         'api-watchdog = api_watchdog.cli:cli'

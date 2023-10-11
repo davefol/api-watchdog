@@ -25,23 +25,9 @@ Will serialize the `WatchdogResultGroup` object to the path specified
 by the `-o` flag. 
 
 ## Installation
-API watchdog handles validation support through extra requirements.
-This means that to install it with TRAPI validation you invoke
 ```
-pip install api-watchdog[TRAPI]
+pip install api-watchdog
 ```
-
-If you are using `zsh` you will run affoul of bracket globbing and should use
-```
-pip install 'api-watchdog[TRAPI]'
-```
-
-See this [stackoverflow question](https://stackoverflow.com/questions/30539798/zsh-no-matches-found-requestssecurity) for context.
-
-Available extensions are:
-- TRAPI
-
-If you do not want any validation support you can use the bare `pip install api-watchdog` command.
 
 ## Docker Installation
 

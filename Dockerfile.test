@@ -5,12 +5,12 @@ FROM renciorg/renci-python-image:v0.0.1
 WORKDIR /app
 
 # Install dependencies
-ADD setup.py VERSION README.md ./
-RUN python setup.py egg_info && pip install `grep -v '^\[' *.egg-info/requires.txt`
+ADD requirements-lock.txt .
+RUN pip install -r requirements-lock.txt
 
 # Add the rest of the code and install package
 ADD . .
 
-RUN pip install .[TRAPI]
+RUN pip install .
 
 CMD python -m unittest discover ./tests

@@ -5,8 +5,8 @@ FROM renciorg/renci-python-image:v0.0.1
 WORKDIR /app
 
 # Install dependencies
-ADD setup.py VERSION README.md ./
-RUN python setup.py egg_info && pip install `grep -v '^\[' *.egg-info/requires.txt`
+ADD requirements-lock.txt .
+RUN pip install -r requirements-lock.txt
 
 # Add the rest of the code and install package
 ADD . .
@@ -14,7 +14,7 @@ ADD . .
 # add it a legit set of test files. good for manual testing
 #ADD ./all_tests ./test
 
-RUN pip install .[TRAPI]
+RUN pip install .
 
 # switch to the new user created in the above image
 USER nru

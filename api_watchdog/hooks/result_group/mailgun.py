@@ -31,6 +31,19 @@ def filter_result_group(
     return result_group
 
 
+def get_passfail(result_group: WatchdogResultGroup, success=True) -> str:
+    """Given a list of results, check if all passed."""
+    if success:
+        for result in result_group.results:
+            success = result.success
+            if not success:
+                break
+        for group in result_group.groups:
+            success = get_passfail(group, success)
+    
+    return success
+
+
 def email_receivers(result_group) -> List[str]:
     def recursive_receivers(result_group: WatchdogResultGroup) -> Set[str]:
         receivers = set()
@@ -56,12 +69,13 @@ class ResultGroupHookMailgun(MailgunMixin, ResultGroupHook):
 
     def __call__(self, result_group: WatchdogResultGroup):
         receivers = email_receivers(result_group)
-        subject = "Watchdog Result Summary"
         for receiver in receivers:
             to = receiver
             filtered_result_group = filter_result_group(
                 result_group, lambda r: receiver in (r.email_to or [])
             )
+            passfail = get_passfail(filtered_result_group)
+            subject = f"[{'PASS' if passfail else 'FAIL'}] Watchdog Result Summary"
             self.send_html_email(
                 to=to,
                 subject=subject,
